@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -17,6 +18,7 @@ function DotGrid() {
 
 export default function AuthLayout({ children, maxWidthClass = 'max-w-md' }) {
   const { t } = useTranslation();
+  const [emblemLoaded, setEmblemLoaded] = useState(false);
 
   return (
     <div
@@ -33,21 +35,44 @@ export default function AuthLayout({ children, maxWidthClass = 'max-w-md' }) {
       {/* Header bar (unified with Dashboard & Home style) */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10 lg:px-16 border-b border-white/5 bg-white/[0.02] backdrop-blur-md">
         <Link to="/" className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-glow-gold flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(255,255,255,0.25)"/>
-              <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          {emblemLoaded ? (
+            <img 
+              src="/src/assets/emblem.png" 
+              alt="State Emblem of India" 
+              className="w-auto object-contain"
+              style={{ 
+                filter: 'url(#gold-emblem) drop-shadow(0 0 4px rgba(233,138,21,0.5))',
+                clipPath: 'inset(11% 13% 11% 13%)',
+                marginLeft: '-14px',
+                marginRight: '-14px',
+                height: '50px'
+              }}
+            />
+          ) : (
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-glow-gold flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="rgba(255,255,255,0.25)"/>
+                <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )}
           <span className="font-display text-lg font-bold text-white tracking-tight">
             {t('app.name')}
           </span>
         </Link>
         <LanguageSwitcher />
+
+        {/* Hidden Image for automatic asset-existence detection */}
+        <img 
+          src="/src/assets/emblem.png" 
+          alt="" 
+          style={{ display: 'none' }} 
+          onLoad={() => setEmblemLoaded(true)} 
+        />
       </header>
 
       {/* Center main form body with glass card */}
@@ -67,6 +92,20 @@ export default function AuthLayout({ children, maxWidthClass = 'max-w-md' }) {
       <footer className="relative z-10 px-6 py-5 text-center border-t border-white/5 bg-white/[0.01]">
         <p className="text-[11px] text-indigo-300/40">{t('app.tagline')}</p>
       </footer>
+      {/* Chroma key filter for converting white-to-transparent and black-to-gold */}
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+        <defs>
+          <filter id="gold-emblem">
+            <feColorMatrix 
+              type="matrix" 
+              values="0 0 0 0 0.91
+                      0 0 0 0 0.54
+                      0 0 0 0 0.08
+                      -0.333 -0.333 -0.333 0 1" 
+            />
+          </filter>
+        </defs>
+      </svg>
     </div>
   );
 }

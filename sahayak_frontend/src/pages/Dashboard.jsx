@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [speakingSchemeId, setSpeakingSchemeId] = useState(null);
   const [expandedSchemeId, setExpandedSchemeId] = useState(null);
   const [schemeDetails, setSchemeDetails] = useState({}); // stores full details by scheme_id
+  const [emblemLoaded, setEmblemLoaded] = useState(false);
 
   // Load recommended schemes
   const loadRecommendations = async () => {
@@ -186,14 +187,37 @@ export default function Dashboard() {
       {/* ── Navigation Header ── */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10 lg:px-16 border-b border-white/5 bg-white/[0.02] backdrop-blur-md">
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="rgba(255,255,255,0.2)" />
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          {emblemLoaded ? (
+            <img 
+              src="/src/assets/emblem.png" 
+              alt="State Emblem of India" 
+              className="w-auto object-contain"
+              style={{ 
+                filter: 'url(#gold-emblem) drop-shadow(0 0 4px rgba(233,138,21,0.5))',
+                clipPath: 'inset(11% 13% 11% 13%)',
+                marginLeft: '-14px',
+                marginRight: '-14px',
+                height: '50px'
+              }}
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="rgba(255,255,255,0.2)" />
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )}
           <span className="font-display text-lg font-bold tracking-tight">Sahayak AI</span>
         </Link>
+
+        {/* Hidden Image for automatic asset-existence detection */}
+        <img 
+          src="/src/assets/emblem.png" 
+          alt="" 
+          style={{ display: 'none' }} 
+          onLoad={() => setEmblemLoaded(true)} 
+        />
 
         <div className="flex items-center gap-4">
           <Link to="/documents" className="text-xs font-semibold text-indigo-200 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-all flex items-center gap-1.5">
@@ -408,6 +432,20 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+      {/* Chroma key filter for converting white-to-transparent and black-to-gold */}
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+        <defs>
+          <filter id="gold-emblem">
+            <feColorMatrix 
+              type="matrix" 
+              values="0 0 0 0 0.91
+                      0 0 0 0 0.54
+                      0 0 0 0 0.08
+                      -0.333 -0.333 -0.333 0 1" 
+            />
+          </filter>
+        </defs>
+      </svg>
     </div>
   );
 

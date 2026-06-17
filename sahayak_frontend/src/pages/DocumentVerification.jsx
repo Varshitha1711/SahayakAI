@@ -34,6 +34,7 @@ export default function DocumentVerification() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(true);
+  const [emblemLoaded, setEmblemLoaded] = useState(false);
 
   // Fetch already uploaded documents
   const fetchDocuments = async () => {
@@ -132,11 +133,33 @@ export default function DocumentVerification() {
           <Link to="/" className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-indigo-300">
             <ArrowLeft className="w-5 h-5 text-white" />
           </Link>
+          {emblemLoaded && (
+            <img 
+              src="/src/assets/emblem.png" 
+              alt="State Emblem of India" 
+              className="w-auto object-contain"
+              style={{ 
+                filter: 'url(#gold-emblem) drop-shadow(0 0 4px rgba(233,138,21,0.5))',
+                clipPath: 'inset(11% 13% 11% 13%)',
+                marginLeft: '-14px',
+                marginRight: '-14px',
+                height: '50px'
+              }}
+            />
+          )}
           <span className="font-display text-lg font-bold tracking-tight">{t('documents.vaultTitle')}</span>
         </div>
         <div className="text-xs text-indigo-300 font-semibold bg-white/5 px-3 py-1.5 rounded-full border border-white/5 flex items-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-emerald-400" /> {t('documents.secureStorage')}
         </div>
+
+        {/* Hidden Image for automatic asset-existence detection */}
+        <img 
+          src="/src/assets/emblem.png" 
+          alt="" 
+          style={{ display: 'none' }} 
+          onLoad={() => setEmblemLoaded(true)} 
+        />
       </header>
 
       {/* Main Container */}
@@ -267,6 +290,20 @@ export default function DocumentVerification() {
         </div>
 
       </main>
+      {/* Chroma key filter for converting white-to-transparent and black-to-gold */}
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+        <defs>
+          <filter id="gold-emblem">
+            <feColorMatrix 
+              type="matrix" 
+              values="0 0 0 0 0.91
+                      0 0 0 0 0.54
+                      0 0 0 0 0.08
+                      -0.333 -0.333 -0.333 0 1" 
+            />
+          </filter>
+        </defs>
+      </svg>
     </div>
   );
 }

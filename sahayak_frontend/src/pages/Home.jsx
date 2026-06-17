@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -7,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Home() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const [emblemLoaded, setEmblemLoaded] = useState(false);
 
   const features = [
     {
@@ -81,20 +83,35 @@ export default function Home() {
       {/* ── Header ── */}
       <header className="relative z-10 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-16">
         <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-gold"
-            style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5z"
-                stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                fill="rgba(255,255,255,0.2)"
-              />
-              <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          {emblemLoaded ? (
+            <img 
+              src="/src/assets/emblem.png" 
+              alt="State Emblem of India" 
+              className="w-auto object-contain"
+              style={{ 
+                filter: 'url(#gold-emblem) drop-shadow(0 0 5px rgba(233,138,21,0.5))',
+                clipPath: 'inset(11% 13% 11% 13%)',
+                marginLeft: '-14px',
+                marginRight: '-14px',
+                height: '56px'
+              }}
+            />
+          ) : (
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-gold"
+              style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2L2 7l10 5 10-5-10-5z"
+                  stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  fill="rgba(255,255,255,0.2)"
+                />
+                <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )}
           <span className="font-display text-xl font-bold text-white tracking-tight">
             {t('app.name')}
           </span>
@@ -107,6 +124,29 @@ export default function Home() {
 
       {/* ── Hero section ── */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12 text-center">
+
+        {emblemLoaded && (
+          <div className="mb-4 animate-fade-up overflow-hidden flex items-center justify-center">
+            <img 
+              src="/src/assets/emblem.png" 
+              alt="State Emblem of India" 
+              className="w-auto object-contain scale-110"
+              style={{ 
+                filter: 'url(#gold-emblem) drop-shadow(0 0 18px rgba(233,138,21,0.6))',
+                clipPath: 'inset(11% 13% 11% 13%)',
+                height: '180px'
+              }}
+            />
+          </div>
+        )}
+
+        {/* Hidden Image for automatic asset-existence detection */}
+        <img 
+          src="/src/assets/emblem.png" 
+          alt="" 
+          style={{ display: 'none' }} 
+          onLoad={() => setEmblemLoaded(true)} 
+        />
 
         {/* Badge */}
         <div
@@ -204,6 +244,20 @@ export default function Home() {
           {t('home.footer')}
         </p>
       </footer>
+      {/* Chroma key filter for converting white-to-transparent and black-to-gold */}
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+        <defs>
+          <filter id="gold-emblem">
+            <feColorMatrix 
+              type="matrix" 
+              values="0 0 0 0 0.91
+                      0 0 0 0 0.54
+                      0 0 0 0 0.08
+                      -0.333 -0.333 -0.333 0 1" 
+            />
+          </filter>
+        </defs>
+      </svg>
     </div>
   );
 }
