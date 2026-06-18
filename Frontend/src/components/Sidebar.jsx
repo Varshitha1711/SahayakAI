@@ -33,7 +33,7 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
   };
 
   return (
-    <aside className="w-64 bg-[#070F1E] border-r border-white/5 flex flex-col justify-between p-6 h-screen sticky top-0 flex-shrink-0 z-40">
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-6 h-screen sticky top-0 flex-shrink-0 z-40">
       <div className="space-y-8">
         {/* Logo with dynamic fallback */}
         <Link to="/" className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
               </svg>
             </div>
           )}
-          <span className="font-display text-lg font-bold tracking-tight text-white">Sahayak</span>
+          <span className="font-display text-lg font-bold tracking-tight text-slate-900">Sahayak</span>
         </Link>
 
         {/* Navigation Links */}
@@ -65,8 +65,8 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
                 onClick={() => navigate(item.path)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-left ${
                   isActive
-                    ? 'text-black font-bold'
-                    : 'text-indigo-300/60 hover:text-white hover:bg-white/[0.03]'
+                    ? 'text-white font-bold'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
                 }`}
                 style={isActive ? { background: 'linear-gradient(135deg, #E98A15, #F0A23E)' } : {}}
               >
@@ -79,13 +79,13 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
       </div>
 
       {/* Voice Assistant integrated in Sidebar */}
-      <div className="pt-4 border-t border-white/5 w-full flex flex-col items-center text-center space-y-2.5">
+      <div className="pt-4 border-t border-slate-200 w-full flex flex-col items-center text-center space-y-2.5">
         <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Voice Assistant</span>
         <VoiceAssistant 
           activeLanguage={i18n.language} 
           onCommand={handleVoiceCommand} 
         />
-        <span className="text-[9px] text-indigo-300/40">Speak "Farmer", "Student", etc.</span>
+        <span className="text-[9px] text-slate-400">Speak "Farmer", "Student", etc.</span>
       </div>
     </aside>
   );

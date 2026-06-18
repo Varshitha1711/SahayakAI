@@ -26,20 +26,21 @@ function AuthLoadingScreen() {
   return (
     <div
       className="min-h-screen flex items-center justify-center"
-      style={{ background: 'linear-gradient(145deg, #060E1C 0%, #0F1B30 30%, #1A2C50 65%, #243965 100%)' }}
+      style={{ background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)' }}
     >
-      <div className="flex flex-col items-center gap-5">
+      <div className="flex flex-col items-center gap-6">
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)', boxShadow: '0 6px 30px rgba(233,138,21,0.45)' }}
+          className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white border border-slate-200 shadow-md p-1.5 animate-pulse"
+          style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.05)' }}
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="rgba(255,255,255,0.2)"/>
-            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <img
+            src="/emblem.svg"
+            alt="Logo"
+            className="w-12 h-12 object-contain"
+          />
         </div>
-        <div className="w-7 h-7 border-2 rounded-full animate-spin"
-          style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }}
+        <div className="w-8 h-8 border-2 rounded-full animate-spin"
+          style={{ borderColor: 'rgba(233,138,21,0.2)', borderTopColor: '#E98A15' }}
         />
       </div>
     </div>

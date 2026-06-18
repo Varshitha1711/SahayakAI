@@ -12,6 +12,30 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import ProfileMenu from '../components/ProfileMenu';
 import { speakText, stopSpeaking } from '../components/VoiceAssistant';
 
+// Helper to get category-based watermark background images
+const getCategoryBgImage = (category) => {
+  const cat = String(category || '').toLowerCase();
+  if (cat.includes('agriculture') || cat.includes('rural') || cat.includes('environment')) {
+    return 'https://images.unsplash.com/photo-1500937386664-56d159f8e9ad?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('education') || cat.includes('learning') || cat.includes('student')) {
+    return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('health') || cat.includes('wellness') || cat.includes('medical')) {
+    return 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('banking') || cat.includes('finance') || cat.includes('insurance') || cat.includes('business') || cat.includes('entrepreneur')) {
+    return 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('welfare') || cat.includes('empowerment') || cat.includes('social')) {
+    return 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('women') || cat.includes('child') || cat.includes('girl')) {
+    return 'https://images.unsplash.com/photo-1519689680058-324335c77ebe?auto=format&fit=crop&q=80&w=600';
+  }
+  return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600';
+};
+
 // Static categories configuration with styling details
 const EXPLORE_CATEGORIES = [
   { 
@@ -231,16 +255,16 @@ export default function Explore() {
 
   return (
     <div
-      className="min-h-screen flex text-white overflow-hidden bg-[#060E1C]"
+      className="min-h-screen flex text-slate-900 overflow-hidden bg-slate-50"
       style={{
-        background: 'linear-gradient(145deg, #060E1C 0%, #0F1B30 30%, #1A2C50 65%, #243965 100%)',
+        background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)',
       }}
     >
       <Sidebar activePage="explore" onVoiceCommand={handleVoiceCommand} />
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col overflow-y-auto h-screen relative">
-        <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-5 border-b border-white/5 bg-[#060E1C]/85 backdrop-blur-md">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-5 border-b border-slate-200 bg-white/70 backdrop-blur-md">
           {/* Linked Search */}
           <div className="relative w-80">
             <input
@@ -251,15 +275,15 @@ export default function Explore() {
                 setSearchParams({ q: e.target.value });
               }}
               placeholder="Search by keywords, tags..."
-              className="w-full bg-[#111A2E]/60 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white/[0.03] text-white"
+              className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white text-slate-900"
             />
-            <Search className="w-4 h-4 text-indigo-300/40 absolute left-3.5 top-3" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-6">
             <LanguageSwitcher />
-            <button className="relative p-1.5 text-indigo-300/60 hover:text-white transition-colors">
+            <button className="relative p-1.5 text-slate-500 hover:text-slate-900 transition-colors">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
             </button>
@@ -276,10 +300,10 @@ export default function Explore() {
               <Compass className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold font-display tracking-tight text-white flex items-center gap-2">
-                Explore Schemes <Sparkles className="w-5 h-5 text-amber-400" />
+              <h1 className="text-3xl font-bold font-display tracking-tight text-slate-900 flex items-center gap-2">
+                Explore Schemes <Sparkles className="w-5 h-5 text-amber-500" />
               </h1>
-              <p className="text-sm text-indigo-300/60 mt-1">Discover government policies, awards, subsidies, and central grants</p>
+              <p className="text-sm text-slate-500 mt-1">Discover government policies, awards, subsidies, and central grants</p>
             </div>
           </div>
 
@@ -293,14 +317,14 @@ export default function Explore() {
             ].map((stat, i) => (
               <div 
                 key={i} 
-                className="p-5 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] flex items-center gap-4 transition-all"
+                className="p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-4 shadow-sm transition-all"
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.bg}`}>
                   <stat.icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
                 <div>
-                  <p className="text-lg font-extrabold text-white">{stat.value}</p>
-                  <p className="text-[10px] font-medium text-indigo-300/40 uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-lg font-extrabold text-slate-900">{stat.value}</p>
+                  <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{stat.label}</p>
                 </div>
               </div>
             ))}
@@ -308,7 +332,7 @@ export default function Explore() {
 
           {/* Ministry / Category Widget Grid */}
           <div className="space-y-4">
-            <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
               <LayoutGrid className="w-4 h-4" /> Browse by Department
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -326,7 +350,7 @@ export default function Explore() {
                       {cat.icon}
                     </div>
                     <span className="text-2xl">{cat.icon}</span>
-                    <span className="text-xs font-bold leading-snug group-hover:text-white transition-colors">
+                    <span className="text-xs font-bold leading-snug text-slate-800 transition-colors">
                       {cat.label}
                     </span>
                   </div>
@@ -338,8 +362,8 @@ export default function Explore() {
           {/* Filtering row */}
           <div className="space-y-4 pt-2">
             {/* Target groups */}
-            <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-4">
-              <span className="text-[10px] font-bold text-indigo-300/40 uppercase tracking-wider mr-2">Target Citizen:</span>
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-2">Target Citizen:</span>
               {TARGET_GROUPS.map(grp => {
                 const isActive = targetGroup === grp.value;
                 return (
@@ -348,8 +372,8 @@ export default function Explore() {
                     onClick={() => setTargetGroup(grp.value)}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                       isActive 
-                        ? 'bg-amber-500 text-black border-amber-500 font-bold' 
-                        : 'border-white/10 text-indigo-300 hover:border-white/30 bg-white/5'
+                        ? 'bg-[#E98A15] text-white border-[#E98A15] font-bold' 
+                        : 'border-slate-300 text-slate-600 hover:border-slate-400 bg-white shadow-sm'
                     }`}
                   >
                     {grp.label}
@@ -360,13 +384,13 @@ export default function Explore() {
 
             {/* Scheme level */}
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold font-display text-white">
+              <h2 className="text-lg font-bold font-display text-slate-900">
                 {selectedCategory || searchQuery || targetGroup || schemeLevel 
                   ? 'Filtered Search Results' 
                   : 'Trending Government Schemes'}
               </h2>
 
-              <div className="flex rounded-xl bg-white/5 p-1 border border-white/5">
+              <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
                 {[
                   { label: 'All Schemes', value: '' },
                   { label: 'Central', value: 'Central' },
@@ -378,7 +402,7 @@ export default function Explore() {
                       key={level.label}
                       onClick={() => setSchemeLevel(level.value)}
                       className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                        isActive ? 'bg-[#E98A15] text-black font-extrabold shadow-sm' : 'text-indigo-300/60 hover:text-white'
+                        isActive ? 'bg-[#E98A15] text-white font-extrabold shadow-sm' : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       {level.label}
@@ -393,12 +417,12 @@ export default function Explore() {
           {loading ? (
             <div className="flex flex-col items-center py-20 gap-3">
               <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-              <span className="text-xs text-indigo-300/60 uppercase font-semibold">Filtering Matches...</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold">Filtering Matches...</span>
             </div>
           ) : schemes.length === 0 ? (
-            <div className="rounded-2xl p-16 text-center border border-white/5 bg-white/[0.01]">
-              <p className="text-sm font-semibold text-indigo-300/60">No schemes matching explore filters</p>
-              <p className="text-xs text-indigo-300/40 mt-1">Try clearing some query inputs or filter tags.</p>
+            <div className="rounded-2xl p-16 text-center border border-slate-200 bg-white">
+              <p className="text-sm font-semibold text-slate-500">No schemes matching explore filters</p>
+              <p className="text-xs text-slate-400 mt-1">Try clearing some query inputs or filter tags.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -411,9 +435,15 @@ export default function Explore() {
                   <div
                     key={`${scheme.scheme_id}-${index}`}
                     onClick={() => handleSchemeClick(scheme)}
-                    className={`rounded-2xl p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 cursor-pointer bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] relative group h-full border-t-4 ${colors.border}`}
+                    className={`rounded-2xl p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 cursor-pointer bg-white border border-slate-200 hover:bg-slate-50 hover:shadow-md relative group h-full border-t-4 ${colors.border} overflow-hidden`}
                   >
-                    <div className="flex flex-col gap-4 flex-grow mb-5">
+                    {/* Subtle Watermark Background Image */}
+                    <div 
+                      className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-[0.08] transition-all group-hover:scale-105 duration-500" 
+                      style={{ backgroundImage: `url(${getCategoryBgImage(scheme.schemeCategory)})` }} 
+                    />
+
+                    <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
                       <div className="flex justify-between items-start">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors.bg}`}>
                           <Bookmark className={`w-5 h-5 ${colors.text}`} />
@@ -424,18 +454,18 @@ export default function Explore() {
                       </div>
 
                       <div className="space-y-1">
-                        <h3 className="font-bold text-white text-sm leading-snug group-hover:text-amber-400 transition-colors">
+                        <h3 className="font-bold text-slate-900 text-sm leading-snug group-hover:text-amber-500 transition-colors">
                           {scheme.scheme_name}
                         </h3>
-                        <p className="text-xs text-indigo-300/40 line-clamp-1">
+                        <p className="text-xs text-slate-500 line-clamp-1">
                           {scheme.schemeCategory || 'Explore Portal'}
                         </p>
                       </div>
 
-                      <div className="flex justify-between items-center bg-[#070F1E] p-3 rounded-xl border border-white/5 mt-auto">
+                      <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 mt-auto">
                         <div className="truncate pr-2">
-                          <p className="text-[9px] text-indigo-300/40 uppercase tracking-wider">Benefit</p>
-                          <p className="text-xs font-bold text-white mt-0.5 truncate">{scheme.benefits || 'Check Details'}</p>
+                          <p className="text-[9px] text-slate-500 uppercase tracking-wider">Benefit</p>
+                          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || 'Check Details'}</p>
                         </div>
                         
                         <button
@@ -443,7 +473,7 @@ export default function Explore() {
                           className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${
                             isSpeaking 
                               ? 'bg-amber-500 border-amber-500 text-white animate-pulse' 
-                              : 'bg-white/5 border-white/10 hover:border-amber-500/50 text-indigo-300 hover:text-amber-400'
+                              : 'bg-white border-slate-200 hover:border-amber-500/50 text-slate-500 hover:text-amber-500'
                           }`}
                         >
                           {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -453,9 +483,9 @@ export default function Explore() {
 
                     {/* Collapsible details */}
                     {isExpanded && (
-                      <div className="mb-4 pt-2 border-t border-white/5 space-y-4 text-xs text-indigo-200/80 animate-fade-in">
+                      <div className="mb-4 pt-2 border-t border-slate-200 space-y-4 text-xs text-slate-600 animate-fade-in relative z-10">
                         {!schemeDetails[scheme.scheme_id] ? (
-                          <div className="flex items-center gap-2 py-4 justify-center text-indigo-300/60 font-semibold">
+                          <div className="flex items-center gap-2 py-4 justify-center text-slate-500 font-semibold">
                             <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
                             <span>Loading details...</span>
                           </div>
@@ -463,22 +493,22 @@ export default function Explore() {
                           <>
                             {schemeDetails[scheme.scheme_id].details && (
                               <div>
-                                <h4 className="font-bold text-white mb-1 uppercase tracking-wide text-[9px] text-amber-500">Scheme Details</h4>
-                                <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].details}</p>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Scheme Details</h4>
+                                <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].details}</p>
                               </div>
                             )}
                             
                             {schemeDetails[scheme.scheme_id].eligibility && (
                               <div>
-                                <h4 className="font-bold text-white mb-1 uppercase tracking-wide text-[9px] text-amber-500">Eligibility Criteria</h4>
-                                <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].eligibility}</p>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Eligibility Criteria</h4>
+                                <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].eligibility}</p>
                               </div>
                             )}
 
                             {schemeDetails[scheme.scheme_id].documents && (
                               <div>
-                                <h4 className="font-bold text-white mb-1 uppercase tracking-wide text-[9px] text-amber-500">Required Documents</h4>
-                                <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].documents}</p>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Required Documents</h4>
+                                <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].documents}</p>
                               </div>
                             )}
                           </>
@@ -487,14 +517,14 @@ export default function Explore() {
                     )}
 
                     {/* Action buttons */}
-                    <div className="flex gap-2.5 mt-auto pt-2">
+                    <div className="flex gap-2.5 mt-auto pt-2 relative z-10">
                       <button 
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSchemeClick(scheme);
                         }}
-                        className="flex-1 py-2 rounded-lg border border-white/10 text-xs font-semibold text-indigo-200 hover:bg-white/5 transition-all text-center"
+                        className="flex-1 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all text-center"
                       >
                         {isExpanded ? 'Less Info' : 'Learn More'}
                       </button>
@@ -504,7 +534,7 @@ export default function Explore() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="flex-1 py-2 rounded-lg bg-white/[0.05] border border-white/10 hover:border-amber-500/30 text-xs font-semibold text-amber-400 hover:text-white transition-all text-center flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-all text-center flex items-center justify-center gap-1.5"
                       >
                         Apply Online <ArrowRight className="w-3 h-3" />
                       </a>
