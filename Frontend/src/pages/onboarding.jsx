@@ -63,7 +63,7 @@ function SectionCard({ metaKey, title, children }) {
   const meta = SECTION_META.find((m) => m.key === metaKey);
   return (
     <div
-      className="glass-card rounded-2xl p-6 border border-white/10 transition-all duration-200"
+      className="glass-card rounded-2xl p-6 border border-slate-200 transition-all duration-200"
     >
       <div className="flex items-center gap-3 mb-5">
         <div
@@ -210,7 +210,7 @@ export default function Onboarding() {
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-[11px] font-bold uppercase tracking-[0.18em]"
           style={{
             background: 'rgba(233,138,21,0.1)',
-            color: '#F0A23E',
+            color: '#D97706',
             border: '1px solid rgba(233,138,21,0.2)',
           }}
         >
@@ -220,10 +220,10 @@ export default function Onboarding() {
           {t('onboarding.badge')}
         </div>
 
-        <h1 className="font-display text-2xl font-bold text-white">
+        <h1 className="font-display text-2xl font-bold text-slate-900">
           {t('onboarding.title')}
         </h1>
-        <p className="mt-1.5 text-sm text-indigo-300/80 leading-relaxed">
+        <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
           {t('onboarding.subtitle')}
         </p>
 
@@ -237,7 +237,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-indigo-300/50">{t('onboarding.subtext')}</p>
+        <p className="mt-2 text-[11px] text-slate-400">{t('onboarding.subtext')}</p>
       </div>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
@@ -346,7 +346,7 @@ export default function Onboarding() {
 
         {/* Error message */}
         {error && (
-          <div className="flex items-start gap-2.5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-200 animate-slide-up">
+          <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 animate-slide-up">
             <svg className="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
             </svg>
@@ -373,7 +373,7 @@ export default function Onboarding() {
               </>
             )}
           </button>
-          <p className="mt-3 text-center text-[11px] text-indigo-300/50">
+          <p className="mt-3 text-center text-[11px] text-slate-400">
             {t('onboarding.privacy')}
           </p>
         </div>

@@ -17,7 +17,7 @@ function Spinner() {
 
 function ErrorBox({ message }) {
   return (
-    <div className="flex items-start gap-2.5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-200 animate-slide-up">
+    <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 animate-slide-up">
       <svg className="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
       </svg>
@@ -28,7 +28,7 @@ function ErrorBox({ message }) {
 
 function InfoBox({ message }) {
   return (
-    <div className="flex items-start gap-2.5 p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm text-amber-200 animate-slide-up">
+    <div className="flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700 animate-slide-up">
       <svg className="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
       </svg>
@@ -83,7 +83,7 @@ export default function SignIn() {
         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5 text-[11px] font-bold uppercase tracking-[0.18em]"
         style={{
           background: 'rgba(233,138,21,0.1)',
-          color: '#F0A23E',
+          color: '#D97706',
           border: '1px solid rgba(233,138,21,0.2)',
         }}
       >
@@ -94,10 +94,10 @@ export default function SignIn() {
         {t('auth.signIn')}
       </div>
 
-      <h1 className="font-display text-2xl font-bold text-white">
+      <h1 className="font-display text-2xl font-bold text-slate-900">
         {t('auth.signInTitle')}
       </h1>
-      <p className="mt-1.5 text-sm text-indigo-300/80 leading-relaxed">
+      <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
         {t('auth.signInSubtitle')}
       </p>
 
@@ -105,14 +105,14 @@ export default function SignIn() {
 
         {/* Email */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="signin-email" className="text-sm font-semibold text-indigo-200/90 flex items-center gap-1">
+          <label htmlFor="signin-email" className="text-sm font-semibold text-slate-700 flex items-center gap-1">
             {t('auth.emailLabel')}
             <span className="text-marigold-500 text-xs">*</span>
           </label>
           <div
-            className="flex items-center overflow-hidden border-2 rounded-xl transition-all duration-200 bg-white/5 border-white/10 focus-within:border-amber-500 focus-within:bg-white/[0.07]"
+            className="flex items-center overflow-hidden border-2 rounded-xl transition-all duration-200 bg-white border-slate-200 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/10 shadow-sm"
           >
-            <div className="flex items-center px-3.5 flex-shrink-0 text-indigo-300/60">
+            <div className="flex items-center px-3.5 flex-shrink-0 text-slate-400">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
@@ -125,21 +125,21 @@ export default function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('auth.emailPlaceholder')}
-              className="w-full py-3 pr-4 text-white outline-none bg-transparent text-[0.9375rem] placeholder-white/20"
+              className="w-full py-3 pr-4 text-slate-900 outline-none bg-transparent text-[0.9375rem] placeholder-slate-400"
             />
           </div>
         </div>
 
         {/* Password */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="signin-password" className="text-sm font-semibold text-indigo-200/90 flex items-center gap-1">
+          <label htmlFor="signin-password" className="text-sm font-semibold text-slate-700 flex items-center gap-1">
             {t('auth.passwordLabel')}
             <span className="text-marigold-500 text-xs">*</span>
           </label>
           <div
-            className="flex items-center overflow-hidden border-2 rounded-xl transition-all duration-200 bg-white/5 border-white/10 focus-within:border-amber-500 focus-within:bg-white/[0.07]"
+            className="flex items-center overflow-hidden border-2 rounded-xl transition-all duration-200 bg-white border-slate-200 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/10 shadow-sm"
           >
-            <div className="flex items-center px-3.5 flex-shrink-0 text-indigo-300/60">
+            <div className="flex items-center px-3.5 flex-shrink-0 text-slate-400">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0110 0v4"/>
@@ -152,12 +152,12 @@ export default function SignIn() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('auth.passwordPlaceholder')}
-              className="w-full py-3 text-white outline-none bg-transparent text-[0.9375rem] placeholder-white/20"
+              className="w-full py-3 text-slate-900 outline-none bg-transparent text-[0.9375rem] placeholder-slate-400"
             />
             <button
               type="button"
               onClick={() => setShowPassword((p) => !p)}
-              className="flex items-center px-3.5 text-indigo-300/60 hover:text-white transition-colors flex-shrink-0"
+              className="flex items-center px-3.5 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0"
               tabIndex={-1}
             >
               {showPassword ? (
@@ -196,10 +196,10 @@ export default function SignIn() {
         </button>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-white/10">
-        <p className="text-center text-sm text-indigo-300/70">
+      <div className="mt-8 pt-6 border-t border-slate-200">
+        <p className="text-center text-sm text-slate-500">
           {t('auth.noAccount')}{' '}
-          <Link to="/signup" className="font-semibold text-amber-400 hover:text-amber-300 transition-colors underline-offset-2 hover:underline">
+          <Link to="/signup" className="font-semibold text-amber-600 hover:text-amber-500 transition-colors underline-offset-2 hover:underline">
             {t('auth.createAccount')} →
           </Link>
         </p>

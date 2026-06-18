@@ -173,9 +173,9 @@ export default function EditProfile() {
     return (
       <div className="space-y-6 animate-fade-up">
         {/* Header Hero Card */}
-        <div className="glass-card rounded-3xl p-8 border border-white/[0.08] relative overflow-hidden bg-white/[0.01]">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="glass-card rounded-3xl p-8 border border-slate-200 relative overflow-hidden bg-white shadow-sm">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
             <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
@@ -189,13 +189,13 @@ export default function EditProfile() {
                 </div>
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-white tracking-tight">{currentUser?.full_name}</h2>
-                <p className="text-sm text-indigo-300/80 font-medium">{currentUser?.email}</p>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">{currentUser?.full_name}</h2>
+                <p className="text-sm text-slate-500 font-medium">{currentUser?.email}</p>
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start pt-1.5">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <CheckCircle2 className="w-3 h-3" /> Email Verified
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-750 border border-amber-200">
                     {profileCompletion()}% Complete
                   </span>
                 </div>
@@ -212,9 +212,9 @@ export default function EditProfile() {
               </button>
               <button
                 onClick={() => navigate('/documents')}
-                className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white border border-white/10 px-6 py-3 text-sm rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-6 py-3 text-sm rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
               >
-                <FileText className="w-4 h-4 text-indigo-300" /> Upload Certificates
+                <FileText className="w-4 h-4 text-slate-500" /> Upload Certificates
               </button>
             </div>
           </div>
@@ -223,90 +223,90 @@ export default function EditProfile() {
         {/* Structured Grid of Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Location details card */}
-          <div className="glass-card rounded-2xl p-6 border border-white/[0.06] bg-white/[0.01] flex flex-col justify-between">
+          <div className="glass-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500/10 text-blue-600 border border-blue-500/20">
                   <MapPin className="w-4.5 h-4.5" />
                 </div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-400">Location</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600">Location</h3>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">State</label>
-                  <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.state || 'Not Specified'}</p>
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">State</label>
+                  <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.state || 'Not Specified'}</p>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">District</label>
-                  <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.district || 'Not Specified'}</p>
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">District</label>
+                  <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.district || 'Not Specified'}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Personal details card */}
-          <div className="glass-card rounded-2xl p-6 border border-white/[0.06] bg-white/[0.01] flex flex-col justify-between">
+          <div className="glass-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/10 text-purple-600 border border-purple-500/20">
                   <User className="w-4.5 h-4.5" />
                 </div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400">Personal</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-purple-600">Personal</h3>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Age</label>
-                    <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.age ? `${currentUser.age} Years` : 'Not Specified'}</p>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Age</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.age ? `${currentUser.age} Years` : 'Not Specified'}</p>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Gender</label>
-                    <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.gender || 'Not Specified'}</p>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Gender</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.gender || 'Not Specified'}</p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Marital Status</label>
-                  <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.marital_status || 'Not Specified'}</p>
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Marital Status</label>
+                  <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.marital_status || 'Not Specified'}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Socio-Economic details card */}
-          <div className="glass-card rounded-2xl p-6 border border-white/[0.06] bg-white/[0.01] flex flex-col justify-between">
+          <div className="glass-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/10 text-amber-600 border border-amber-500/20">
                   <Sparkles className="w-4.5 h-4.5" />
                 </div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400">Socio-Economic</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-600">Socio-Economic</h3>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Category</label>
-                    <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.category || 'Not Specified'}</p>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Category</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.category || 'Not Specified'}</p>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Income (Annual)</label>
-                    <p className="text-sm font-semibold text-white mt-0.5">
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Income (Annual)</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-0.5">
                       {currentUser?.annual_income ? `₹${Number(currentUser.annual_income).toLocaleString('en-IN')}` : 'Not Specified'}
                     </p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Occupation</label>
-                    <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.occupation || 'Not Specified'}</p>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Occupation</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.occupation || 'Not Specified'}</p>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Education</label>
-                    <p className="text-sm font-semibold text-white mt-0.5">{currentUser?.education_level || 'Not Specified'}</p>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Education</label>
+                    <p className="text-sm font-semibold text-slate-900 mt-0.5">{currentUser?.education_level || 'Not Specified'}</p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold tracking-wider text-indigo-300/40 block">Disability Status</label>
-                  <p className="text-sm font-semibold text-white mt-0.5">
+                  <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Disability Status</label>
+                  <p className="text-sm font-semibold text-slate-900 mt-0.5">
                     {currentUser?.disability_status ? 'Yes' : 'No'}
                   </p>
                 </div>
@@ -320,20 +320,20 @@ export default function EditProfile() {
 
   return (
     <div
-      className="min-h-screen flex text-white overflow-hidden bg-[#060E1C]"
-      style={{ background: 'linear-gradient(145deg, #060E1C 0%, #0F1B30 30%, #1A2C50 65%, #243965 100%)' }}
+      className="min-h-screen flex text-slate-900 overflow-hidden bg-slate-50"
+      style={{ background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)' }}
     >
       <Sidebar activePage="profile" />
 
       {/* ── Main Content Area ── */}
       <div className="flex-1 flex flex-col overflow-y-auto h-screen relative">
         <div className="absolute inset-0 dot-pattern pointer-events-none" />
-        <div className="orb animate-float" style={{ width: '550px', height: '550px', background: 'radial-gradient(circle, rgba(233,138,21,0.1) 0%, transparent 70%)', top: '-150px', left: '-150px' }} />
+        <div className="orb animate-float" style={{ width: '550px', height: '550px', background: 'radial-gradient(circle, rgba(233,138,21,0.05) 0%, transparent 70%)', top: '-150px', left: '-150px' }} />
 
         {/* ── Header ── */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-5 border-b border-white/5 bg-[#060E1C]/85 backdrop-blur-md">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-5 border-b border-slate-200 bg-white/70 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-sm font-bold text-white">
+            <h1 className="font-display text-sm font-bold text-slate-900">
               {isEditing ? 'Edit Profile' : 'User Profile'}
             </h1>
           </div>
@@ -351,7 +351,7 @@ export default function EditProfile() {
             <div className="space-y-6 animate-fade-up">
               {/* Account info (read-only in form) */}
               <div
-                className="rounded-2xl p-5 flex items-center gap-4 bg-white/[0.02] border border-white/[0.07]"
+                className="rounded-2xl p-5 flex items-center gap-4 bg-white border border-slate-200 shadow-sm"
               >
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl flex-shrink-0"
@@ -360,16 +360,16 @@ export default function EditProfile() {
                   {currentUser?.full_name?.[0]?.toUpperCase() || '?'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-bold text-white text-base">{currentUser?.full_name}</p>
-                  <p className="text-xs text-indigo-400 mt-0.5">{currentUser?.email}</p>
+                  <p className="font-bold text-slate-900 text-base">{currentUser?.full_name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{currentUser?.email}</p>
                   <span
-                    className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"
                   >
                     <CheckCircle2 className="w-2.5 h-2.5" />
                     Email Verified
                   </span>
                 </div>
-                <p className="text-[10px] text-indigo-400/60 text-right hidden sm:block leading-relaxed">
+                <p className="text-[10px] text-slate-400 text-right hidden sm:block leading-relaxed">
                   Name &amp; email<br/>cannot be changed
                 </p>
               </div>
@@ -479,16 +479,14 @@ export default function EditProfile() {
 
                 {/* Feedback */}
                 {error && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl text-sm text-red-200 animate-slide-up"
-                    style={{ background: 'rgba(239,68,68,0.1)', border: '1.5px solid rgba(239,68,68,0.2)' }}>
-                    <ShieldAlert className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-400" />
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl text-sm text-red-600 bg-red-50 border border-red-200 animate-slide-up">
+                    <ShieldAlert className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" />
                     {error}
                   </div>
                 )}
                 {success && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl text-sm text-emerald-200 animate-slide-up"
-                    style={{ background: 'rgba(34,197,94,0.1)', border: '1.5px solid rgba(34,197,94,0.25)' }}>
-                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-400" />
+                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 animate-slide-up">
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" />
                     {success}
                   </div>
                 )}
@@ -513,7 +511,7 @@ export default function EditProfile() {
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="w-full sm:w-1/2 bg-white/5 hover:bg-white/10 text-white border border-white/10 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
+                    className="w-full sm:w-1/2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm"
                   >
                     <X className="w-4.5 h-4.5" />
                     Cancel

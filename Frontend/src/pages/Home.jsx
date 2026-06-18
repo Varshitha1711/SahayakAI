@@ -36,7 +36,7 @@ export default function Home() {
     <div
       className="min-h-screen flex flex-col relative overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, #060E1C 0%, #0F1B30 30%, #1A2C50 65%, #243965 100%)',
+        background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)',
       }}
     >
       {/* ── Ambient orbs ── */}
@@ -66,15 +66,15 @@ export default function Home() {
       />
 
       {/* Dot grid */}
-      <div className="absolute inset-0 dot-pattern pointer-events-none" />
+      <div className="absolute inset-0 dot-pattern-light pointer-events-none" />
 
       {/* Decorative ring */}
       <div
-        className="absolute rounded-full border border-white/5 pointer-events-none"
+        className="absolute rounded-full border border-slate-300/40 pointer-events-none"
         style={{ width: '700px', height: '700px', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
       />
       <div
-        className="absolute rounded-full border border-white/[0.03] pointer-events-none"
+        className="absolute rounded-full border border-slate-300/30 pointer-events-none"
         style={{ width: '1000px', height: '1000px', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
       />
 
@@ -104,7 +104,7 @@ export default function Home() {
               <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="font-display text-xl font-bold text-white tracking-tight">
+          <span className="font-display text-xl font-bold text-slate-900 tracking-tight">
             {t('app.name')}
           </span>
         </div>
@@ -133,7 +133,7 @@ export default function Home() {
 
         {/* Headline */}
         <h1
-          className="font-display font-bold leading-tight text-white animate-fade-up delay-100"
+          className="font-display font-bold leading-tight text-slate-900 animate-fade-up delay-100"
           style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', maxWidth: '820px' }}
         >
           {t('app.tagline')}
@@ -141,7 +141,7 @@ export default function Home() {
           <span className="text-gradient-gold">{t('home.heroEffortless')}</span>
         </h1>
 
-        <p className="mt-6 text-indigo-200/60 leading-relaxed animate-fade-up delay-200"
+        <p className="mt-6 text-slate-600 leading-relaxed animate-fade-up delay-200"
           style={{ fontSize: 'clamp(0.95rem, 2vw, 1.125rem)', maxWidth: '440px' }}
         >
           {t('home.heroSub')}
@@ -150,9 +150,9 @@ export default function Home() {
         {/* CTA */}
         {currentUser ? (
           <div className="mt-10 glass rounded-2xl px-8 py-5 animate-fade-up delay-300">
-            <p className="text-indigo-200 text-sm">
+            <p className="text-slate-600 text-sm">
               {t('home.signedInAs')}{' '}
-              <span className="font-bold text-marigold-400">{currentUser.email || currentUser.phoneNumber}</span>
+              <span className="font-bold text-marigold-500">{currentUser.email || currentUser.phoneNumber}</span>
             </p>
           </div>
         ) : (
@@ -170,8 +170,8 @@ export default function Home() {
             <Link
               to="/signup"
               id="home-signup-btn"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base font-semibold rounded-xl border-2 text-white transition-all duration-255 hover:bg-white/10 hover:border-white/30 active:scale-95"
-              style={{ borderColor: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.05)' }}
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base font-semibold rounded-xl border-2 text-slate-700 transition-all duration-255 hover:bg-slate-200 hover:border-slate-300 active:scale-95"
+              style={{ borderColor: 'rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.5)' }}
             >
               {t('auth.createAccount')}
             </Link>
@@ -183,7 +183,7 @@ export default function Home() {
           {stats.map((s, i) => (
             <div key={i} className="text-center">
               <p className="font-display text-2xl sm:text-3xl font-bold text-gradient-gold">{s.value}</p>
-              <p className="text-[11px] text-indigo-300/60 uppercase tracking-wider mt-0.5">{s.label}</p>
+              <p className="text-[11px] text-slate-500 uppercase tracking-wider mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -199,8 +199,8 @@ export default function Home() {
                 {f.emoji}
               </div>
               <div>
-                <p className="font-semibold text-white text-sm">{f.title}</p>
-                <p className="text-indigo-300/60 text-xs mt-0.5 leading-relaxed">{f.desc}</p>
+                <p className="font-semibold text-slate-900 text-sm">{f.title}</p>
+                <p className="text-slate-600 text-xs mt-0.5 leading-relaxed">{f.desc}</p>
               </div>
             </div>
           ))}
@@ -209,7 +209,7 @@ export default function Home() {
 
       {/* ── Footer ── */}
       <footer className="relative z-10 px-6 py-5 text-center">
-        <p className="text-[11px] text-indigo-500/40">
+        <p className="text-[11px] text-slate-400">
           {t('home.footer')}
         </p>
       </footer>
