@@ -6,6 +6,7 @@ from app.routes.auth import router as auth_router
 from app.routes.profile import router as profile_router
 from app.routes.schemes import router as schemes_router
 from app.routes.documents import router as documents_router
+from app.routes.chat import router as chat_router
 
 # Attempt to auto-create tables in Supabase on startup
 try:
@@ -39,6 +40,7 @@ app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(schemes_router)
 app.include_router(documents_router)
+app.include_router(chat_router)
 
 @app.get("/")
 def read_root():
