@@ -9,16 +9,14 @@ import VoiceAssistant from './VoiceAssistant';
 
 export default function Sidebar({ activePage, onVoiceCommand }) {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [logoError, setLogoError] = useState(false);
 
-  // Define sidebar navigation items
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/', id: 'dashboard' },
     { label: 'My Schemes', icon: ClipboardCheck, path: '/my-schemes', id: 'my-schemes' },
     { label: 'Explore', icon: Compass, path: '/explore', id: 'explore' },
     { label: 'Profile', icon: User, path: '/profile', id: 'profile' },
-    { label: 'Documents', icon: FileText, path: '/documents', id: 'documents' },
     { label: 'Settings', icon: Settings, path: '/settings', id: 'settings' },
     { label: 'Help', icon: HelpCircle, path: '/help', id: 'help' }
   ];
@@ -71,7 +69,7 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
                 style={isActive ? { background: 'linear-gradient(135deg, #E98A15, #F0A23E)' } : {}}
               >
                 <item.icon className="w-5 h-5" />
-                {item.label}
+                {t(`sidebar.${item.id}`)}
               </button>
             );
           })}

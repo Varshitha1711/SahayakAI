@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   User, MapPin, Briefcase, GraduationCap,
   Search, Volume2, VolumeX, Eye, ClipboardCheck, ArrowRight, HelpCircle,
-  Bell, ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight,
   Bookmark, CheckCircle
 } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../contexts/AuthContext';
@@ -54,6 +54,46 @@ export default function Dashboard() {
   const [expandedSchemeId, setExpandedSchemeId] = useState(null);
   const [schemeDetails, setSchemeDetails] = useState({}); // stores full details by scheme_id
   const [visitedCount, setVisitedCount] = useState(0);
+
+  // Bookmarks State
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bookmarks_${currentUser?.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      const saved = localStorage.getItem(`bookmarks_${currentUser.id}`);
+      setBookmarks(saved ? JSON.parse(saved) : []);
+    }
+  }, [currentUser]);
+
+  const toggleBookmark = (schemeId) => {
+    let updated;
+    if (bookmarks.includes(schemeId)) {
+      updated = bookmarks.filter(id => id !== schemeId);
+    } else {
+      updated = [...bookmarks, schemeId];
+    }
+    setBookmarks(updated);
+    if (currentUser) {
+      localStorage.setItem(`bookmarks_${currentUser.id}`, JSON.stringify(updated));
+    }
+  };
+
+  const isBookmarked = (schemeId) => bookmarks.includes(schemeId);
+
+  const getSortedList = (list) => {
+    return [...list].sort((a, b) => {
+      const aBook = isBookmarked(a.scheme_id) ? 1 : 0;
+      const bBook = isBookmarked(b.scheme_id) ? 1 : 0;
+      return bBook - aBook;
+    });
+  };
 
   // Pagination states
   const [recPage, setRecPage] = useState(0);
@@ -265,10 +305,6 @@ export default function Dashboard() {
           {/* Action icons & Profile */}
           <div className="flex items-center gap-6">
             <LanguageSwitcher />
-            <button className="relative p-1.5 text-slate-500 hover:text-slate-900 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-            </button>
             <div className="relative">
               <ProfileMenu />
             </div>
@@ -383,7 +419,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {recommendations.slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
+                  {getSortedList(recommendations).slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
                 </div>
               )
             ) : (
@@ -398,7 +434,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {searchResults.slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
+                  {getSortedList(searchResults).slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
                 </div>
               )
             )}
@@ -479,9 +515,24 @@ export default function Dashboard() {
         <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
           {/* Top Row: Icon + Badge */}
           <div className="flex justify-between items-start">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors.iconBg}`}>
-              <Bookmark className="w-5 h-5" style={{ color: colors.text }} />
-            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark(scheme.scheme_id);
+              }}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isBookmarked(scheme.scheme_id) 
+                  ? 'bg-amber-500 text-white shadow-md' 
+                  : `${colors.iconBg} hover:bg-slate-200`
+              }`}
+            >
+              <Bookmark 
+                className="w-5 h-5" 
+                style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }} 
+                fill={isBookmarked(scheme.scheme_id) ? '#ffffff' : 'none'}
+              />
+            </button>
             <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1">
               You Qualify <CheckCircle className="w-3 h-3" />
             </span>

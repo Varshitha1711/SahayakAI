@@ -189,5 +189,40 @@
       "langs": "Languages"
     },
     "footer": "© 2026 Sahayak · Empowering citizens across India"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "my-schemes": "My Schemes",
+    "explore": "Explore",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help"
+  },
+  "settings": {
+    "title": "Application Settings",
+    "heading": "Settings",
+    "subheading": "Manage portal preferences and notifications",
+    "languageSection": "Preferred Language",
+    "languageDesc": "Select your default translation language for central and state schemes:",
+    "notificationsSection": "Notification Channels",
+    "notificationsDesc": "Choose how you wish to receive updates regarding newly matched schemes or deadlines:",
+    "emailAlerts": "Email Alerts",
+    "emailAlertsDesc": "Receive updates in your email inbox",
+    "saveSuccess": "Settings saved successfully!"
+  },
+  "help": {
+    "title": "Help & Support",
+    "back": "Back",
+    "heading": "How can we help you?",
+    "subheading": "Chat with our AI Assistant to find answers instantly.",
+    "chatPlaceholder": "Ask a question about government schemes...",
+    "faqSection": "Frequently Asked Questions",
+    "contactSection": "Contact Us",
+    "quickLinks": "Quick Links",
+    "errorAI": "Sorry, I encountered an error connecting to the AI server. Please try again later.",
+    "suggestedTitle": "Suggested Questions",
+    "suggested1": "What education schemes am I eligible for?",
+    "suggested2": "How do I apply for farmer subsidies?",
+    "suggested3": "What documents do I need for health schemes?"
   }
 }

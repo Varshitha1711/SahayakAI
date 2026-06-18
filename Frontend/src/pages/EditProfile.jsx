@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   User, MapPin, Briefcase, IndianRupee, GraduationCap, 
-  Sparkles, FileText, CheckCircle2, Edit3, X, Save, ShieldAlert
+  Sparkles, CheckCircle2, Edit3, X, Save, ShieldAlert
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { TextField, SelectField } from '../components/FormField';
@@ -202,19 +202,13 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* Action buttons side-by-side */}
+            {/* Action buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
               <button
                 onClick={() => setIsEditing(true)}
                 className="w-full sm:w-auto btn-gold px-6 py-3 text-sm flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <Edit3 className="w-4 h-4" /> Edit Profile
-              </button>
-              <button
-                onClick={() => navigate('/documents')}
-                className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-6 py-3 text-sm rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
-              >
-                <FileText className="w-4 h-4 text-slate-500" /> Upload Certificates
               </button>
             </div>
           </div>

@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { 
-  User, ClipboardCheck, HelpCircle, LayoutDashboard, Compass, Settings,
-  Bell, ChevronLeft, ChevronRight, Bookmark, ArrowRight
+  Sparkles, Bot, Send, ArrowRight
 } from 'lucide-react';
 import { API_BASE_URL, useAuth } from '../contexts/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -42,32 +41,48 @@ const CONTACT = [
 
 export default function HelpSupport() {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currentUser } = useAuth();
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  
+  const chatEndRef = useRef(null);
 
-  const handleChatSubmit = async () => {
-    if (!chatInput.trim()) return;
-    
-    const userMessage = chatInput.trim();
-    setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
-    setChatInput('');
+  // Auto scroll to chat bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory, isChatLoading]);
+
+  const triggerChatSubmit = async (text) => {
+    setChatHistory(prev => [...prev, { role: 'user', content: text }]);
     setIsChatLoading(true);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/chat/`, {
-        question: userMessage
+        question: text
       });
       setChatHistory(prev => [...prev, { role: 'ai', content: response.data.answer }]);
     } catch (err) {
       console.error('Chat error:', err);
-      setChatHistory(prev => [...prev, { role: 'ai', content: 'Sorry, I encountered an error connecting to the AI server. Please try again later.' }]);
+      setChatHistory(prev => [...prev, { role: 'ai', content: t('help.errorAI') }]);
     } finally {
       setIsChatLoading(false);
     }
   };
+
+  const handleChatSubmit = () => {
+    if (!chatInput.trim()) return;
+    const text = chatInput.trim();
+    setChatInput('');
+    triggerChatSubmit(text);
+  };
+
+  const SUGGESTED_QUESTIONS = [
+    { text: t('help.suggested1'), icon: '🎓' },
+    { text: t('help.suggested2'), icon: '🌾' },
+    { text: t('help.suggested3'), icon: '🏥' }
+  ];
 
   return (
     <div
@@ -90,9 +105,9 @@ export default function HelpSupport() {
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
-              Back
+              {t('common.back')}
             </button>
-            <h1 className="font-display text-sm font-bold text-slate-900">Help &amp; Support</h1>
+            <h1 className="font-display text-sm font-bold text-slate-900">{t('help.title')}</h1>
           </div>
 
           <div className="flex items-center gap-6">
@@ -105,58 +120,114 @@ export default function HelpSupport() {
 
         {/* ── Main Help & Support Body ── */}
         <main className="flex-grow max-w-3xl w-full mx-auto px-8 py-8 space-y-8">
+          
           {/* Chatbot Interface */}
-          <div
-            className="rounded-2xl p-6 text-center animate-fade-up bg-white border border-slate-200 shadow-sm"
-          >
-            <p className="text-4xl mb-3">🤝</p>
-            <h2 className="font-display text-xl font-bold text-slate-900 mb-1">How can we help you?</h2>
-            <p className="text-sm text-slate-500 mb-4">Chat with our AI Assistant to find answers instantly.</p>
-            
-            <div className="w-full max-w-2xl mx-auto flex flex-col gap-3">
-               {/* Chat History */}
-               {chatHistory.length > 0 && (
-                  <div className="flex flex-col gap-3 max-h-80 overflow-y-auto w-full text-left bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-inner" style={{ scrollbarWidth: 'thin' }}>
-                     {chatHistory.map((msg, i) => (
-                        <div key={i} className={`p-3.5 rounded-xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-amber-100 text-amber-950 self-end ml-12 border border-amber-200 shadow-sm' : 'bg-white text-slate-800 mr-12 border border-slate-200 shadow-sm'}`}>
-                           <span className={`font-bold text-[9px] uppercase tracking-widest opacity-70 block mb-1.5 ${msg.role === 'user' ? 'text-amber-800' : 'text-amber-600'}`}>
-                             {msg.role === 'user' ? 'You' : 'Sahayak AI'}
-                           </span>
-                           {/* Render formatting or text */}
-                           <div className="whitespace-pre-wrap">{msg.content}</div>
-                        </div>
-                     ))}
+          <div className="rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm flex flex-col">
+            {/* Chatbot Header */}
+            <div className="bg-slate-950 p-4 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-white leading-none">Sahayak AI</h3>
+                  <div className="flex items-center gap-1.5 mt-1 leading-none">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">Online</span>
                   </div>
-               )}
+                </div>
+              </div>
+              <Sparkles className="w-4 h-4 text-amber-500" />
+            </div>
 
-               {/* Input Box */}
-               <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl w-full transition-all bg-white border border-slate-300 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/10 shadow-sm">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !isChatLoading && handleChatSubmit()}
-                    placeholder="Ask a question about government schemes..."
-                    className="bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none flex-1"
-                  />
-                  <button 
-                    onClick={handleChatSubmit} 
-                    disabled={!chatInput.trim() || isChatLoading}
-                    className="text-amber-500 disabled:opacity-30 hover:text-amber-400 transition-colors"
-                  >
-                    {isChatLoading ? (
-                       <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M22 12a10 10 0 00-10-10" strokeLinecap="round"/></svg>
-                    ) : (
-                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    )}
-                  </button>
-               </div>
+            {/* Chat History / Prompt Panel */}
+            <div className="p-5 bg-slate-50 flex flex-col gap-4 max-h-[360px] overflow-y-auto min-h-[160px] border-b border-slate-100" style={{ scrollbarWidth: 'thin' }}>
+              {chatHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
+                  <p className="text-3xl">🤝</p>
+                  <div>
+                    <h4 className="font-display text-sm font-bold text-slate-900">{t('help.heading')}</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">{t('help.subheading')}</p>
+                  </div>
+
+                  {/* Suggested questions shortcuts */}
+                  <div className="w-full max-w-lg space-y-2 pt-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-left px-1">{t('help.suggestedTitle')}</p>
+                    {SUGGESTED_QUESTIONS.map((q, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSuggestedClick(q.text)}
+                        className="w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-amber-500 hover:bg-amber-500/5 transition-all text-xs text-slate-700 font-semibold flex items-center justify-between group"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{q.icon}</span>
+                          <span>{q.text}</span>
+                        </span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-500 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {chatHistory.map((msg, i) => (
+                    <div
+                      key={i}
+                      className={`p-3.5 rounded-2xl text-xs leading-relaxed max-w-[85%] ${
+                        msg.role === 'user'
+                          ? 'bg-amber-500 text-white self-end rounded-tr-none shadow-sm'
+                          : 'bg-white text-slate-800 self-start rounded-tl-none border border-slate-200 shadow-sm'
+                      }`}
+                    >
+                      <span
+                        className={`font-bold text-[8px] uppercase tracking-widest block mb-1 ${
+                          msg.role === 'user' ? 'text-amber-100' : 'text-amber-500'
+                        }`}
+                      >
+                        {msg.role === 'user' ? 'You' : 'Sahayak AI'}
+                      </span>
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    </div>
+                  ))}
+
+                  {/* Typing Indicator */}
+                  {isChatLoading && (
+                    <div className="bg-white text-slate-800 self-start rounded-2xl rounded-tl-none border border-slate-200 shadow-sm p-3.5 max-w-[85%] flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  )}
+
+                  <div ref={chatEndRef} />
+                </div>
+              )}
+            </div>
+
+            {/* Input Footer Area */}
+            <div className="p-3 bg-white flex items-center gap-3">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !isChatLoading && handleChatSubmit()}
+                placeholder={t('help.chatPlaceholder')}
+                disabled={isChatLoading}
+                className="bg-slate-50 text-xs text-slate-900 placeholder-slate-400 outline-none flex-1 py-3 px-4 rounded-xl border border-slate-200 focus:border-amber-500 focus:bg-white transition-all disabled:opacity-60"
+              />
+              <button
+                onClick={handleChatSubmit}
+                disabled={!chatInput.trim() || isChatLoading}
+                className="w-10 h-10 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-30 transition-colors flex items-center justify-center text-white cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
           {/* Contact options */}
           <section className="animate-fade-up">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Contact Us</h3>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">{t('help.contactSection')}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {CONTACT.map((c) => (
                 <div
@@ -174,7 +245,7 @@ export default function HelpSupport() {
 
           {/* FAQ */}
           <section className="animate-fade-up">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Frequently Asked Questions</h3>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">{t('help.faqSection')}</h3>
             <div className="space-y-2">
               {FAQ.map((item, i) => (
                 <details
@@ -202,7 +273,7 @@ export default function HelpSupport() {
 
           {/* Quick links */}
           <section className="animate-fade-up pb-8">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Quick Links</h3>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">{t('help.quickLinks')}</h3>
             <div className="flex flex-wrap gap-2">
               {['Report a Bug', 'Privacy Policy', 'Terms of Service', 'About Sahayak'].map((link) => (
                 <button

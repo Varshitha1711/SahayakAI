@@ -5,7 +5,6 @@ import SignIn              from '../pages/SignIn';
 import SignUp              from '../pages/SignUp';
 import Onboarding          from '../pages/onboarding';
 import Dashboard           from '../pages/Dashboard';
-import DocumentVerification from '../pages/DocumentVerification';
 import EditProfile         from '../pages/EditProfile';
 import HelpSupport         from '../pages/HelpSupport';
 import MySchemes           from '../pages/MySchemes';
@@ -33,8 +32,6 @@ export default function AppRoutes() {
       {/* Help & Support */}
       <Route path="/help" element={<HelpSupport />} />
 
-      {/* Document vault */}
-      <Route path="/documents" element={<DocumentVerification />} />
 
       {/* My Schemes (all schemes) */}
       <Route path="/my-schemes" element={<MySchemes />} />

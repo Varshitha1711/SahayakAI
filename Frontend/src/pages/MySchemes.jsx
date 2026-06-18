@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Search, Bell, ChevronDown, ChevronUp, Bookmark, 
+  Search, ChevronDown, ChevronUp, Bookmark, 
   Volume2, VolumeX, ArrowRight, BookOpen, Layers
 } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../contexts/AuthContext';
@@ -52,6 +52,46 @@ export default function MySchemes() {
   const [expandedSchemeId, setExpandedSchemeId] = useState(null);
   const [speakingSchemeId, setSpeakingSchemeId] = useState(null);
   const [schemeDetails, setSchemeDetails] = useState({});
+
+  // Bookmarks State
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bookmarks_${currentUser?.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      const saved = localStorage.getItem(`bookmarks_${currentUser.id}`);
+      setBookmarks(saved ? JSON.parse(saved) : []);
+    }
+  }, [currentUser]);
+
+  const toggleBookmark = (schemeId) => {
+    let updated;
+    if (bookmarks.includes(schemeId)) {
+      updated = bookmarks.filter(id => id !== schemeId);
+    } else {
+      updated = [...bookmarks, schemeId];
+    }
+    setBookmarks(updated);
+    if (currentUser) {
+      localStorage.setItem(`bookmarks_${currentUser.id}`, JSON.stringify(updated));
+    }
+  };
+
+  const isBookmarked = (schemeId) => bookmarks.includes(schemeId);
+
+  const getSortedList = (list) => {
+    return [...list].sort((a, b) => {
+      const aBook = isBookmarked(a.scheme_id) ? 1 : 0;
+      const bBook = isBookmarked(b.scheme_id) ? 1 : 0;
+      return bBook - aBook;
+    });
+  };
 
   // Categories list based on datasets
   const categories = [
@@ -211,10 +251,6 @@ export default function MySchemes() {
           {/* Actions */}
           <div className="flex items-center gap-6">
             <LanguageSwitcher />
-            <button className="relative p-1.5 text-slate-500 hover:text-slate-900 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-            </button>
             <div className="relative">
               <ProfileMenu />
             </div>
@@ -262,7 +298,7 @@ export default function MySchemes() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {schemes.map((scheme, index) => {
+              {getSortedList(schemes).map((scheme, index) => {
                 const colors = getSchemeColors(index);
                 const isExpanded = expandedSchemeId === scheme.scheme_id;
                 const isSpeaking = speakingSchemeId === scheme.scheme_id;
@@ -281,9 +317,24 @@ export default function MySchemes() {
 
                     <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
                       <div className="flex justify-between items-start">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors.bg}`}>
-                          <Bookmark className={`w-5 h-5 ${colors.text}`} />
-                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBookmark(scheme.scheme_id);
+                          }}
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                            isBookmarked(scheme.scheme_id) 
+                              ? 'bg-amber-500 text-white shadow-md' 
+                              : `${colors.bg} hover:bg-slate-200`
+                          }`}
+                        >
+                          <Bookmark 
+                            className="w-5 h-5" 
+                            style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }} 
+                            fill={isBookmarked(scheme.scheme_id) ? '#ffffff' : 'none'}
+                          />
+                        </button>
                         <span className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
                           Available <Layers className="w-3 h-3" />
                         </span>
