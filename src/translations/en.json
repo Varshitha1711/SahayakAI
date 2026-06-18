@@ -1,0 +1,193 @@
+{
+  "app": {
+    "name": "Sahayak AI",
+    "tagline": "Your government services assistant"
+  },
+  "auth": {
+    "signInTitle": "Welcome Back",
+    "signInSubtitle": "Sign in to continue to Sahayak",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Register to find eligible government schemes",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "As per your ID",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 6 characters",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "createAccount": "Create Account",
+    "signInInstead": "Sign in instead",
+    "haveAccount": "Already have an account?",
+    "noAccount": "New to Sahayak?",
+    "signIn": "Sign In",
+    "passwordsMatch": "Passwords match",
+    "passwordsMismatch": "Passwords don't match yet"
+  },
+  "common": {
+    "loading": "Loading...",
+    "back": "Back"
+  },
+  "onboarding": {
+    "badge": "Final Step · Setup Your Profile",
+    "title": "Complete Your Citizen Profile",
+    "subtitle": "Sahayak matches your profile to discover specific central & state benefits you qualify for.",
+    "subtext": "3 sections · all information is private and secure",
+    "selectPlaceholder": "Select",
+    "submit": "Generate Scheme Matches",
+    "saving": "Saving citizen profile...",
+    "privacy": "Your data is stored securely and used only for local scheme calculations.",
+    "sections": {
+      "location": "1. Geographic Location",
+      "personal": "2. Demographics",
+      "status": "3. Socio-Economic Profile"
+    },
+    "fields": {
+      "state": "State / Union Territory",
+      "district": "District Name",
+      "age": "Age (in Years)",
+      "gender": "Gender",
+      "maritalStatus": "Marital Status",
+      "category": "Social Category",
+      "occupation": "Occupation Status",
+      "annualIncome": "Annual Family Income (in Rupees)",
+      "educationLevel": "Education Level",
+      "disabilityStatus": "Are you Specially Abled / Disabled?"
+    },
+    "placeholders": {
+      "state": "Select your State",
+      "district": "Enter district",
+      "age": "e.g. 24",
+      "gender": "Select gender",
+      "maritalStatus": "Select status",
+      "category": "Select category",
+      "occupation": "Select occupation",
+      "annualIncome": "e.g. 250000",
+      "educationLevel": "Select education level",
+      "disabilityStatus": "Select Yes/No"
+    },
+    "options": {
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "maritalStatus": {
+        "single": "Single",
+        "married": "Married",
+        "widowed": "Widowed",
+        "divorced": "Divorced"
+      },
+      "category": {
+        "general": "General",
+        "obc": "OBC",
+        "sc": "SC",
+        "st": "ST"
+      },
+      "occupation": {
+        "student": "Student",
+        "farmer": "Farmer",
+        "worker": "Worker / Labour",
+        "entrepreneur": "Entrepreneur / Business Owner",
+        "unemployed": "Unemployed",
+        "retired": "Retired / Pensioner"
+      },
+      "education": {
+        "below10": "Below 10th / 10th Standard",
+        "intermediate": "Intermediate / 12th / Diploma",
+        "ug": "Undergraduate (UG)",
+        "pg": "Postgraduate (PG)",
+        "phd": "PhD / Doctorate",
+        "any": "No formal education / Any"
+      },
+      "yesNo": {
+        "yes": "Yes",
+        "no": "No"
+      }
+    }
+  },
+  "dashboard": {
+    "welcome": "Namaste",
+    "portalActive": "Citizen Portal Active",
+    "uploadDocuments": "Upload Documents",
+    "schemeDetails": "Scheme Details",
+    "eligibilityCriteria": "Eligibility Criteria",
+    "requiredDocuments": "Required Documents",
+    "howToApply": "How to Apply",
+    "schemeLevel": "Level",
+    "summaryText": "We matched your profile with the national database. Below are the schemes you can apply for in",
+    "profileSummary": "Profile Summary",
+    "profileComplete": "Profile Complete",
+    "completeProfile": "Complete Profile",
+    "tabs": {
+      "eligible": "Eligible Schemes",
+      "search": "Search All Schemes"
+    },
+    "searchPlaceholder": "Search schemes e.g. Farmer subsidy, PM Kisan, Post-Matric Scholarship...",
+    "noSchemes": "No schemes found matching your profile",
+    "noSchemesSubtext": "Try updating your annual income, category or occupation details.",
+    "updateProfile": "Update Profile",
+    "emptySearch": "Type in search bar or use the Voice Assistant button to speak your query.",
+    "noSearchResults": "No schemes found matching",
+    "voiceAssistant": "Voice Assistant",
+    "voiceDesc": "Ask Sahayak to search schemes. Speak in Telugu, Hindi or English.",
+    "voiceTry": "Try saying:",
+    "voiceSupports": "Supports English, Hindi (हिंदी) & Telugu (తెలుగు)",
+    "recentlyViewed": "Recently Viewed",
+    "noRecentlyViewed": "No recently viewed schemes yet. Click schemes to view details.",
+    "schemeLevel": "Level",
+    "collapseDetails": "Collapse Details",
+    "expandDetails": "Expand Details"
+  },
+  "documents": {
+    "vaultTitle": "Sahayak AI · Document Vault",
+    "secureStorage": "Secure Storage (AES-256)",
+    "title": "Verify your certificates",
+    "desc": "Upload your Aadhaar, Income Certificate, and Caste Certificate. Verified documents bypass manual verification queues during scheme applications, accelerating processing.",
+    "vaultLoad": "Opening document vault...",
+    "vaultError": "Failed to load document vault.",
+    "uploadSuccess": "uploaded successfully!",
+    "formatsError": "Invalid file format. Only PDF, JPG, JPEG, and PNG are allowed.",
+    "sizeError": "File is too large. Maximum allowed size is 5MB.",
+    "viewFile": "View File",
+    "reupload": "Re-upload",
+    "upload": "Upload File",
+    "uploading": "Uploading...",
+    "verified": "Verified",
+    "privacyTitle": "Privacy & Security Shield",
+    "privacyDesc": "All documents uploaded to Sahayak are stored securely in isolated private storage containers. Only you and authorized government officers verify these files. They are never shared publicly.",
+    "types": {
+      "aadhaar": {
+        "title": "Aadhaar Card",
+        "desc": "Proof of identity & residence (mandatory for most schemes)"
+      },
+      "income": {
+        "title": "Income Certificate",
+        "desc": "Government issued proof of household income (for subsidy matching)"
+      },
+      "caste": {
+        "title": "Caste Certificate",
+        "desc": "For SC, ST, or OBC category scheme matching (if applicable)"
+      }
+    }
+  },
+  "home": {
+    "heroEffortless": "made effortless",
+    "heroSub": "Discover welfare schemes, benefits & services you're eligible for — in seconds, in your language.",
+    "signedInAs": "Signed in as",
+    "features": {
+      "secureTitle": "Secure OTP Login",
+      "secureDesc": "Phone-verified, no passwords needed",
+      "langTitle": "Your Language",
+      "langDesc": "English, हिंदी, తెలుగు & ಕನ್ನಡ",
+      "matchTitle": "Instant Matching",
+      "matchDesc": "AI-powered scheme eligibility"
+    },
+    "stats": {
+      "schemes": "Govt Schemes",
+      "states": "States Covered",
+      "langs": "Languages"
+    },
+    "footer": "© 2026 Sahayak · Empowering citizens across India"
+  }
+}

@@ -1,109 +1,42 @@
-# Sahayak AI
+# Sahayak — Frontend
 
-### AI-Powered Multilingual Citizen Service Assistant
+AI-powered multilingual Government Services Assistant for India. React + Vite + Tailwind, with Firebase Auth/Firestore to follow.
 
-Sahayak AI is an intelligent citizen assistance platform that helps users discover, understand, and access government schemes and public services through a multilingual AI-powered interface. The platform enables citizens to check eligibility, receive personalized scheme recommendations, verify required documents, and obtain step-by-step guidance for application processes in Telugu, Hindi, and English.
+## Setup
 
-By leveraging Artificial Intelligence, Natural Language Processing (NLP), Retrieval-Augmented Generation (RAG), and Document Intelligence, JanMitra AI simplifies government service access and improves digital inclusion for citizens who struggle with fragmented information, language barriers, and complex application procedures.
+```bash
+npm install
+npm run dev
+```
 
----
+Visit `http://localhost:5173`. Routes: `/` (home), `/signin`, `/signup`.
 
-## Features
+## Project structure
 
-### 🤖 AI Government Assistant
+```
+src/
+  assets/            static images, icons
+  components/        shared UI (LanguageSwitcher, AuthLayout, ...)
+  pages/             route-level screens (Home, SignIn, SignUp, ...)
+  routes/            AppRoutes.jsx — route table
+  services/          external integrations (firebaseAuth.js, later firestore.js)
+  contexts/          React context providers (AuthContext)
+  translations/      i18n.js config + en.json / hi.json / te.json
+```
 
-* Ask questions in Telugu, Hindi, or English
-* Conversational guidance for government services
-* Context-aware responses using official scheme information
+## What's real vs. stubbed right now
 
-### 🎯 Scheme Discovery & Eligibility Checker
+- **Real:** routing, page layouts, the OTP-style two-step sign-in/sign-up forms, i18next wired up for English/Hindi/Telugu with a working language switcher.
+- **Stubbed:** `src/services/firebaseAuth.js` fakes `sendOtp` / `verifyOtp` with a delay so the UI is fully clickable end to end. No real Firebase project is connected yet.
 
-* Personalized government scheme recommendations
-* Eligibility assessment based on citizen profile
-* Explanation of eligibility criteria and benefits
+## Next session: wiring up Firebase
 
-### 📊 Citizen Insights
+1. Create a Firebase project, enable Phone Auth, and add a web app.
+2. Copy `.env.example` to `.env.local` and fill in the config values.
+3. Replace the bodies of `sendOtp` / `verifyOtp` / `signOutUser` in `services/firebaseAuth.js` with real calls (`signInWithPhoneNumber`, `RecaptchaVerifier`, `confirmationResult.confirm`). `AuthContext` and the pages don't need to change.
+4. Add `services/firestore.js` for reading/writing user profile documents (the `name` collected on sign-up is currently captured in the form but not yet persisted anywhere).
 
-* Personalized benefit discovery
+## Notes
 
-
----
-
-## Technology Stack
-
-### Frontend
-
-* React
-  
-### Backend
-
-* FastAPI
-* Python
-
-### Database
-
-* PostgreSQL
-
-### AI & Machine Learning
-
-* LangChain
-* Llama / OpenAI Models
-* Sentence Transformers
-* Retrieval-Augmented Generation (RAG)
-
-### Multilingual Support
-
-* IndicTrans
-* Whisper
-* Text-to-Speech APIs
-
----
-
-## Architecture
-
-Citizen Interface
-↓
-AI Assistant
-↓
-Scheme Knowledge Base (RAG)
-↓
-Eligibility Engine
-↓
-Document Intelligence Engine
-↓
-Recommendations & Guidance
-
----
-
-## AI Components
-
-* Natural Language Processing (NLP)
-* Multilingual Language Translation
-* Retrieval-Augmented Generation (RAG)
-* Recommendation System
-* OCR & Information Extraction
-* Eligibility Reasoning Engine
-
----
-
-## Project Goals
-
-* Simplify access to government schemes
-* Reduce language barriers
-* Improve awareness of public welfare programs
-* Assist citizens with eligibility and documentation
-* Enhance digital accessibility through AI-powered assistance
-
----
-
-## Future Enhancements
-
-* Voice-based citizen interaction
-* Life-event-based scheme recommendations
-* Real-time government API integration
-* Mobile application support
-* Predictive benefit discovery
-
----
-
-### Making Government Services Accessible Through AI
+- The Hindi/Telugu strings in `translations/` are a first pass — worth a native-speaker review before this ships.
+- Tailwind theme tokens (colors, fonts) live in `tailwind.config.js`.
