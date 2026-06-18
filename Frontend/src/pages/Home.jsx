@@ -81,8 +81,17 @@ export default function Home() {
       {/* ── Header ── */}
       <header className="relative z-10 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-16">
         <div className="flex items-center gap-3">
+          <img
+            src="/emblem.svg"
+            alt="Logo"
+            className="w-10 h-10 rounded-xl object-contain bg-white/10 p-0.5 shadow-glow-gold flex-shrink-0"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling.style.display = 'flex';
+            }}
+          />
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-gold"
+            className="w-10 h-10 rounded-xl hidden items-center justify-center flex-shrink-0 shadow-glow-gold"
             style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">

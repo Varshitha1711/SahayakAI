@@ -33,8 +33,17 @@ export default function AuthLayout({ children, maxWidthClass = 'max-w-md' }) {
       {/* Header bar (unified with Dashboard & Home style) */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10 lg:px-16 border-b border-white/5 bg-white/[0.02] backdrop-blur-md">
         <Link to="/" className="flex items-center gap-3">
+          <img
+            src="/emblem.svg"
+            alt="Logo"
+            className="w-9 h-9 rounded-xl object-contain bg-white/10 p-0.5 shadow-glow-gold flex-shrink-0"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling.style.display = 'flex';
+            }}
+          />
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-glow-gold flex-shrink-0"
+            className="w-9 h-9 rounded-xl hidden items-center justify-center shadow-glow-gold flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
