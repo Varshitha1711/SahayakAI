@@ -1,7 +1,12 @@
 import os
 import json
 import threading
+import tempfile
 from deep_translator import GoogleTranslator
+from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
+from app.config import settings
 
 # Place cache file in the backend root directory
 CACHE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "translations_cache.json")
@@ -15,8 +20,16 @@ def load_cache():
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 loaded = json.load(f)
+                cleaned = {}
+                for k, v in loaded.items():
+                    if ":" in k:
+                        parts = k.split(":", 1)
+                        cleaned[f"{parts[0]}:{parts[1].strip()}"] = v.strip() if isinstance(v, str) else v
+                    else:
+                        cleaned[k] = v
                 with _cache_lock:
-                    _cache = loaded
+                    _cache = cleaned
+                print(f"Loaded {len(_cache)} translations from persistent cache.")
         except Exception as e:
             print(f"Error loading translation cache: {e}")
             with _cache_lock:
@@ -30,13 +43,62 @@ def save_cache():
     try:
         with _cache_lock:
             cache_copy = _cache.copy()
-        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+        # Atomic write to prevent file corruption
+        dir_name = os.path.dirname(CACHE_FILE)
+        with tempfile.NamedTemporaryFile("w", dir=dir_name, delete=False, encoding="utf-8") as f:
             json.dump(cache_copy, f, ensure_ascii=False, indent=2)
+            temp_name = f.name
+        os.replace(temp_name, CACHE_FILE)
     except Exception as e:
         print(f"Error saving translation cache: {e}")
 
 # Load the cache immediately
 load_cache()
+
+def translate_fields_google(texts: list[str], lang: str) -> list[str]:
+    if not texts:
+        return []
+    
+    # Filter empty or whitespace-only texts
+    cleaned_texts = [t.strip() for t in texts]
+    if not any(cleaned_texts):
+        return cleaned_texts
+        
+    # Batch join using a safe delimiter
+    delimiter = "\n---SEP---\n"
+    joined_text = delimiter.join(cleaned_texts)
+    
+    try:
+        translated_joined = GoogleTranslator(source='auto', target=lang).translate(joined_text)
+        if translated_joined:
+            parts = translated_joined.split("---SEP---")
+            cleaned_parts = []
+            for p in parts:
+                p_str = p.strip()
+                if p_str.startswith("-") or p_str.endswith("-"):
+                    p_str = p_str.strip("-").strip()
+                cleaned_parts.append(p_str)
+                
+            if len(cleaned_parts) == len(cleaned_texts):
+                return cleaned_parts
+            else:
+                print(f"Warning: Google Translate batch split mismatch: expected {len(cleaned_texts)}, got {len(cleaned_parts)}")
+    except Exception as e:
+        print(f"Google Translate batch translation failed: {e}")
+        
+    # Fallback to individual translations
+    results = []
+    for t in cleaned_texts:
+        if not t:
+            results.append("")
+            continue
+        try:
+            res = GoogleTranslator(source='auto', target=lang).translate(t)
+            results.append(res if res else t)
+        except Exception as ex:
+            print(f"Individual fallback failed for '{t[:20]}...': {ex}")
+            results.append(t)
+    return results
 
 def translate_text(text: str, target_lang: str) -> str:
     if not text or not text.strip():
@@ -51,21 +113,64 @@ def translate_text(text: str, target_lang: str) -> str:
     if lang not in supported_langs:
         return text
 
-    cache_key = f"{lang}:{text}"
+    text_stripped = text.strip()
+    cache_key = f"{lang}:{text_stripped}"
     with _cache_lock:
         if cache_key in _cache:
             return _cache[cache_key]
 
+    # Try Groq translation first
+    api_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY")
+    if api_key:
+        try:
+            lang_names = {"te": "Telugu", "hi": "Hindi", "kn": "Kannada"}
+            target_lang_name = lang_names.get(lang, lang)
+            system_prompt = f"Translate this text into {target_lang_name}. Return ONLY the translation. Do not include explanations, notes, or markdown."
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", system_prompt),
+                ("user", "{text}")
+            ])
+            try:
+                llm = ChatGroq(
+                    model="llama-3.3-70b-versatile",
+                    groq_api_key=api_key,
+                    temperature=0.0,
+                    max_retries=1
+                )
+                from langchain_core.output_parsers import StrOutputParser
+                chain = prompt | llm | StrOutputParser()
+                translated = chain.invoke({"text": text_stripped})
+            except Exception as e33:
+                print(f"Llama 3.3 translation failed ({e33}). Falling back to llama-3.1-8b-instant...")
+                llm = ChatGroq(
+                    model="llama-3.1-8b-instant",
+                    groq_api_key=api_key,
+                    temperature=0.0,
+                    max_retries=1
+                )
+                from langchain_core.output_parsers import StrOutputParser
+                chain = prompt | llm | StrOutputParser()
+                translated = chain.invoke({"text": text_stripped})
+
+            if translated:
+                translated_cleaned = translated.strip()
+                with _cache_lock:
+                    _cache[cache_key] = translated_cleaned
+                save_cache()
+                return translated_cleaned
+        except Exception as e:
+            print(f"Groq single translate failed, falling back: {e}")
+
+    # Fallback to GoogleTranslator
     try:
-        # Translate from English to target language
-        translated = GoogleTranslator(source='auto', target=lang).translate(text)
+        translated = GoogleTranslator(source='auto', target=lang).translate(text_stripped)
         if translated:
             with _cache_lock:
                 _cache[cache_key] = translated
             save_cache()
             return translated
     except Exception as e:
-        print(f"Translation error for '{text}' to {lang}: {e}")
+        print(f"Translation error for '{text_stripped}' to {lang}: {e}")
         
     return text
 
@@ -77,17 +182,99 @@ def translate_scheme(scheme: dict, target_lang: str, lite: bool = False) -> dict
     if lang == "en":
         return scheme
         
+    supported_langs = ["hi", "te", "kn"]
+    if lang not in supported_langs:
+        return scheme
+
     translated_scheme = scheme.copy()
-    if lite:
-        fields_to_translate = ["scheme_name", "benefits", "schemeCategory", "level"]
-    else:
-        fields_to_translate = ["scheme_name", "details", "benefits", "eligibility", "application", "documents", "schemeCategory", "level"]
+    fields_to_translate = ["scheme_name", "details", "benefits", "eligibility", "application", "documents", "schemeCategory", "level"]
     
-    for field in fields_to_translate:
-        val = scheme.get(field)
-        if val and isinstance(val, str):
-            translated_scheme[field] = translate_text(val, lang)
+    # 1. Translate from cache first
+    to_translate = {}
+    with _cache_lock:
+        for field in fields_to_translate:
+            val = scheme.get(field)
+            if val and isinstance(val, str) and val.strip():
+                val_stripped = val.strip()
+                cache_key = f"{lang}:{val_stripped}"
+                if cache_key in _cache:
+                    translated_scheme[field] = _cache[cache_key]
+                else:
+                    lite_fields = ["scheme_name", "benefits", "schemeCategory", "level"]
+                    if not lite or field in lite_fields:
+                        to_translate[field] = val_stripped
+
+    # 2. If nothing uncached, return immediately
+    if not to_translate:
+        return translated_scheme
+
+    # 3. Translate using Groq
+    api_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY")
+    translated_result = {}
+    groq_success = False
+    
+    if api_key:
+        try:
+            lang_names = {"te": "Telugu", "hi": "Hindi", "kn": "Kannada"}
+            target_lang_name = lang_names.get(lang, lang)
             
+            system_prompt = (
+                f"You are a translation assistant. Translate the values of the following JSON object from English into {target_lang_name}. "
+                "Ensure the translation is natural, grammatically correct, and uses local terminology for government services. "
+                "Return ONLY the JSON object with the exact same keys and translated values. Do not write any markdown code blocks or explanations."
+            )
+            
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", system_prompt),
+                ("user", "{json_str}")
+            ])
+            
+            try:
+                llm = ChatGroq(
+                    model="llama-3.3-70b-versatile",
+                    groq_api_key=api_key,
+                    temperature=0.0,
+                    response_format={"type": "json_object"},
+                    max_retries=1
+                )
+                chain = prompt | llm | JsonOutputParser()
+                translated_result = chain.invoke({"json_str": json.dumps(to_translate)})
+                groq_success = True
+            except Exception as e33:
+                print(f"Llama 3.3 batch translation failed ({e33}). Falling back to llama-3.1-8b-instant...")
+                llm = ChatGroq(
+                    model="llama-3.1-8b-instant",
+                    groq_api_key=api_key,
+                    temperature=0.0,
+                    response_format={"type": "json_object"},
+                    max_retries=1
+                )
+                chain = prompt | llm | JsonOutputParser()
+                translated_result = chain.invoke({"json_str": json.dumps(to_translate)})
+                groq_success = True
+        except Exception as e:
+            print(f"Groq batch translation failed, falling back to GoogleTranslator: {e}")
+
+    # 4. Fallback to GoogleTranslator (Batch approach)
+    if not groq_success or not translated_result:
+        fields_list = list(to_translate.keys())
+        texts_list = list(to_translate.values())
+        translated_texts = translate_fields_google(texts_list, lang)
+        for field, trans_val in zip(fields_list, translated_texts):
+            if trans_val:
+                translated_result[field] = trans_val
+
+    # 5. Save to cache
+    if translated_result:
+        with _cache_lock:
+            for field, orig_val in to_translate.items():
+                trans_val = translated_result.get(field)
+                if trans_val:
+                    cache_key = f"{lang}:{orig_val}"
+                    _cache[cache_key] = trans_val
+                    translated_scheme[field] = trans_val
+        save_cache()
+        
     return translated_scheme
 
 def translate_scheme_hybrid(scheme: dict, target_lang: str, lite: bool = True, force_sync: bool = False) -> dict:
@@ -98,22 +285,30 @@ def translate_scheme_hybrid(scheme: dict, target_lang: str, lite: bool = True, f
     if lang == "en":
         return scheme
         
-    fields = ["scheme_name", "benefits", "schemeCategory", "level"] if lite else ["scheme_name", "details", "benefits", "eligibility", "application", "documents", "schemeCategory", "level"]
-    
-    all_cached = True
+    supported_langs = ["hi", "te", "kn"]
+    if lang not in supported_langs:
+        return scheme
+
     translated_scheme = scheme.copy()
-    
+    all_fields = ["scheme_name", "details", "benefits", "eligibility", "application", "documents", "schemeCategory", "level"]
+    lite_fields = ["scheme_name", "benefits", "schemeCategory", "level"]
+    relevant_fields = lite_fields if lite else all_fields
+
+    all_cached = True
     with _cache_lock:
-        for field in fields:
+        for field in relevant_fields:
             val = scheme.get(field)
-            if val and isinstance(val, str):
-                cache_key = f"{lang}:{val}"
+            if val and isinstance(val, str) and val.strip():
+                cache_key = f"{lang}:{val.strip()}"
                 if cache_key in _cache:
                     translated_scheme[field] = _cache[cache_key]
                 else:
                     all_cached = False
-                    
-    if all_cached or force_sync:
-        return translate_scheme(scheme, target_lang, lite=lite)
-    else:
+
+    if all_cached:
         return translated_scheme
+
+    # Not fully cached -> actually translate the missing fields instead of
+    # silently returning English. Previously this branch returned
+    # translated_scheme as-is, leaving uncached fields untranslated forever.
+    return translate_scheme(scheme, target_lang, lite=lite)
