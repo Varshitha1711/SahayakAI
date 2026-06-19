@@ -40,7 +40,7 @@ def chat_with_groq(request: ChatRequest, current_user: User = Depends(get_curren
         # Retrieve recommended schemes for the user
         eligible_schemes = get_recommended_schemes(current_user)
         if eligible_schemes:
-            for i, scheme in enumerate(eligible_schemes[:10], 1): # Limit to top 10 to fit context window cleanly
+            for i, scheme in enumerate(eligible_schemes[:5], 1): # Limit to top 5 to fit context window and save tokens
                 system_instruction += f"{i}. **{scheme['scheme_name']}** (Category: {scheme.get('schemeCategory', 'General')}, Benefit: {scheme.get('benefits', 'N/A')})\n"
                 system_instruction += f"   Apply Link: https://www.myscheme.gov.in/schemes/{scheme['slug']}\n"
         else:
@@ -48,7 +48,7 @@ def chat_with_groq(request: ChatRequest, current_user: User = Depends(get_curren
 
         system_instruction += (
             "\nInstructions:\n"
-            "1. Be concise, polite, and directly address the user's query.\n"
+            "1. Be extremely concise, direct, and polite. Keep answers under 120 words to minimize token usage.\n"
             "2. If they ask about schemes they are eligible for, list the matches above and include their official apply links (e.g. `https://www.myscheme.gov.in/schemes/{{slug}}`).\n"
             "3. Recommend schemes relevant to their question and guide them on how to qualify or apply.\n"
             "4. Use the user's details to personalize your answers (e.g., if they ask about education schemes, note if their profile matches the requirements)."
@@ -62,10 +62,10 @@ def chat_with_groq(request: ChatRequest, current_user: User = Depends(get_curren
         )
 
         llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             groq_api_key=os.getenv("GROQ_API_KEY"),
-            temperature=0.7,
-            max_tokens=500
+            temperature=0.6,
+            max_tokens=250
         )
         output_parser = StrOutputParser()
         chain = prompt | llm | output_parser

@@ -12,48 +12,25 @@ router = APIRouter(prefix="/schemes", tags=["Schemes"])
 def get_recommendations(
     background_tasks: BackgroundTasks,
     lang: str = Query("en"),
-    page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
-    category: str = Query(None),
-    q: str = Query(None),
     current_user: User = Depends(get_current_user)
 ):
     """
     Evaluates the current user's profile and returns a list of schemes 
-    they are eligible for, filtered using the matching logic, with pagination and search.
+    they are eligible for, filtered using the matching logic.
     """
     if not current_user.state or current_user.age is None:
         return []
         
     schemes = get_recommended_schemes(current_user)
     
-    # Filter by category if provided
-    if category:
-        schemes = [s for s in schemes if category.lower() in str(s.get("schemeCategory", "")).lower()]
-        
-    # Filter by search query if provided
-    if q:
-        q_lower = q.lower()
-        schemes = [s for s in schemes if 
-            q_lower in str(s.get("scheme_name", "")).lower() or
-            q_lower in str(s.get("details", "")).lower() or
-            q_lower in str(s.get("benefits", "")).lower() or
-            q_lower in str(s.get("schemeCategory", "")).lower() or
-            q_lower in str(s.get("tags", "")).lower()
-        ]
-        
-    # Paginate
-    start_idx = (page - 1) * limit
-    end_idx = start_idx + limit
-    matched_schemes = schemes[start_idx:end_idx]
-    
     results = []
-    for i, s in enumerate(matched_schemes):
+    for i, s in enumerate(schemes):
         if i < 3:
             results.append(translate_scheme_hybrid(s, lang, lite=True, force_sync=True))
+            background_tasks.add_task(translate_scheme, s, lang, lite=False)
         else:
             results.append(translate_scheme_hybrid(s, lang, lite=True, force_sync=False))
-            background_tasks.add_task(translate_scheme, s, lang, lite=True)
+            background_tasks.add_task(translate_scheme, s, lang, lite=False)
             
     return results
 
@@ -83,7 +60,6 @@ def get_all_schemes(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     category: str = Query(None),
-    level: str = Query(None),
     q: str = Query(None),
     lang: str = Query("en")
 ):
@@ -98,11 +74,21 @@ def get_all_schemes(
 
     # Filter by category if provided
     if category:
-        df = df[df["schemeCategory"].str.lower().str.contains(category.lower(), na=False)]
-
-    # Filter by level if provided
-    if level:
-        df = df[df["level"].str.lower() == level.lower()]
+        cat_lower = category.lower().strip()
+        category_mapping = {
+            "agriculture, rural & environment": ["agriculture", "rural & environment"],
+            "education & learning": ["education & learning"],
+            "health & wellness": ["health & wellness"],
+            "banking, financial services & insurance": ["banking", "financial services and insurance"],
+            "social welfare & empowerment": ["social welfare & empowerment"],
+            "women & child": ["women and child"],
+            "business & entrepreneurship": ["business & entrepreneurship"]
+        }
+        target_tags = category_mapping.get(cat_lower, [cat_lower])
+        import re
+        escaped_tags = [re.escape(tag) for tag in target_tags]
+        pattern = "|".join(escaped_tags)
+        df = df[df["schemeCategory"].str.lower().str.contains(pattern, na=False)]
 
     # Filter by search query if provided
     if q:
@@ -147,6 +133,11 @@ def get_all_schemes(
 @router.get("/{scheme_id}", response_model=SchemeResponse)
 def get_scheme_by_id(scheme_id: int, lang: str = Query("en")):
     """Retrieves full details of a specific scheme by its ID."""
+    from app.services.recommendation import dynamic_schemes_cache
+    if scheme_id in dynamic_schemes_cache:
+        scheme = dynamic_schemes_cache[scheme_id]
+        return translate_scheme(scheme, lang)
+
     global schemes_df
     if schemes_df is None or len(schemes_df) == 0:
         raise HTTPException(

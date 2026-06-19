@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Default to parent directory of app/ where CSVs are placed
     CSV_DATA_DIR: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+    # Groq API Configuration
+    GROQ_API_KEY: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
         extra="ignore"
