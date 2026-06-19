@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Sahayak AI",
-    "tagline": "Your government services assistant"
+    "tagline": "SAHAYAKAI - Bridging Citizens and Services"
   },
   "auth": {
     "signInTitle": "Welcome Back",
@@ -109,6 +109,36 @@
   "dashboard": {
     "welcome": "Namaste",
     "portalActive": "Citizen Portal Active",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "eligibleCount": "You're eligible for {{count}} new schemes",
+    "statsEligible": "Eligible Schemes",
+    "statsVisited": "Visited Schemes",
+    "statsBenefits": "Total Benefits",
+    "topMatches": "Your Top Matches",
+    "searchResults": "Search Results for \"{{query}}\"",
+    "viewAll": "View All",
+    "loadingMatches": "Loading Matches...",
+    "noMatchesFound": "No Matches Found",
+    "noMatchesSubtext": "Try filling more details in edit profile to get recommendations.",
+    "updateProfile": "Update Profile",
+    "emptySearch": "Type a query to search government schemes.",
+    "noSearchResults": "No schemes found matching \"{{query}}\"",
+    "recentlyViewed": "Recently Viewed",
+    "noRecentlyViewed": "No recently viewed schemes yet.",
+    "youQualify": "You Qualify",
+    "benefitLabel": "Benefit",
+    "checkDetails": "Check Details",
+    "loadingDetails": "Loading details...",
+    "collapseDetails": "Less Info",
+    "expandDetails": "Learn More",
+    "applyOnline": "Apply Online",
+    "voiceAssistantBrief": "Voice Assistant",
+    "voiceSpeakFarmer": "Speak \"Farmer\", \"Student\", etc.",
+    "listeningSpeakNow": "Listening... Speak now",
+    "youSaid": "You said:",
+    "speakToSahayak": "Speak to Sahayak",
     "uploadDocuments": "Upload Documents",
     "schemeDetails": "Scheme Details",
     "eligibilityCriteria": "Eligibility Criteria",
@@ -224,5 +254,43 @@
     "suggested1": "What education schemes am I eligible for?",
     "suggested2": "How do I apply for farmer subsidies?",
     "suggested3": "What documents do I need for health schemes?"
+  },
+  "myschemes": {
+    "title": "My Schemes",
+    "subtitle": "Browse all available government schemes in our directory",
+    "searchPlaceholder": "Search all schemes...",
+    "available": "Available",
+    "loadMore": "Load More Schemes",
+    "categories": {
+      "all": "All Categories",
+      "agriculture": "Agriculture, Rural & Environment",
+      "education": "Education & Learning",
+      "health": "Health & Wellness",
+      "banking": "Banking, Financial Services & Insurance",
+      "welfare": "Social Welfare & Empowerment",
+      "women": "Women & Child",
+      "business": "Business & Entrepreneurship"
+    }
+  },
+  "explore": {
+    "title": "Explore Schemes",
+    "subtitle": "Discover government policies, awards, subsidies, and central grants",
+    "searchPlaceholder": "Search by keywords, tags...",
+    "welfareSchemes": "Welfare Schemes",
+    "statesCovered": "States & UTs",
+    "statesCoveredVal": "37 Covered",
+    "activeMinistries": "Active Ministries",
+    "activeMinistriesVal": "15+ Depts",
+    "monthlyVisitors": "Monthly Visitors",
+    "browseByDept": "Browse by Department",
+    "targetCitizen": "Target Citizen",
+    "allCitizens": "All Citizens",
+    "filteredResults": "Filtered Search Results",
+    "trendingSchemes": "Trending Government Schemes",
+    "allSchemes": "All Schemes",
+    "central": "Central",
+    "state": "State",
+    "noSchemesExplore": "No schemes matching explore filters",
+    "noSchemesExploreSub": "Try clearing some query inputs or filter tags."
   }
 }

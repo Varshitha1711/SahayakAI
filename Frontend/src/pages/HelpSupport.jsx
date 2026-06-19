@@ -47,11 +47,16 @@ export default function HelpSupport() {
   const [chatHistory, setChatHistory] = useState([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   
-  const chatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
-  // Auto scroll to chat bottom
+  // Auto scroll to chat bottom (only within the chatbot container)
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [chatHistory, isChatLoading]);
 
   const triggerChatSubmit = async (text) => {
@@ -75,6 +80,10 @@ export default function HelpSupport() {
     if (!chatInput.trim()) return;
     const text = chatInput.trim();
     setChatInput('');
+    triggerChatSubmit(text);
+  };
+
+  const handleSuggestedClick = (text) => {
     triggerChatSubmit(text);
   };
 
@@ -141,7 +150,11 @@ export default function HelpSupport() {
             </div>
 
             {/* Chat History / Prompt Panel */}
-            <div className="p-5 bg-slate-50 flex flex-col gap-4 max-h-[360px] overflow-y-auto min-h-[160px] border-b border-slate-100" style={{ scrollbarWidth: 'thin' }}>
+            <div
+              ref={chatContainerRef}
+              className="p-5 bg-slate-50 flex flex-col gap-4 max-h-[360px] overflow-y-auto min-h-[160px] border-b border-slate-100"
+              style={{ scrollbarWidth: 'thin' }}
+            >
               {chatHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
                   <p className="text-3xl">🤝</p>
@@ -198,8 +211,6 @@ export default function HelpSupport() {
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   )}
-
-                  <div ref={chatEndRef} />
                 </div>
               )}
             </div>

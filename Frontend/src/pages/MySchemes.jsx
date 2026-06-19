@@ -95,14 +95,14 @@ export default function MySchemes() {
 
   // Categories list based on datasets
   const categories = [
-    { label: 'All Categories', value: '' },
-    { label: 'Agriculture, Rural & Environment', value: 'Agriculture, Rural & Environment' },
-    { label: 'Education & Learning', value: 'Education & Learning' },
-    { label: 'Health & Wellness', value: 'Health & Wellness' },
-    { label: 'Banking, Financial Services & Insurance', value: 'Banking, Financial Services & Insurance' },
-    { label: 'Social Welfare & Empowerment', value: 'Social Welfare & Empowerment' },
-    { label: 'Women & Child', value: 'Women & Child' },
-    { label: 'Business & Entrepreneurship', value: 'Business & Entrepreneurship' }
+    { key: 'all', value: '' },
+    { key: 'agriculture', value: 'Agriculture, Rural & Environment' },
+    { key: 'education', value: 'Education & Learning' },
+    { key: 'health', value: 'Health & Wellness' },
+    { key: 'banking', value: 'Banking, Financial Services & Insurance' },
+    { key: 'welfare', value: 'Social Welfare & Empowerment' },
+    { key: 'women', value: 'Women & Child' },
+    { key: 'business', value: 'Business & Entrepreneurship' }
   ];
 
   // Fetch schemes from backend
@@ -242,7 +242,7 @@ export default function MySchemes() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search all schemes..."
+              placeholder={t('myschemes.searchPlaceholder')}
               className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white text-slate-900"
             />
             <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -260,8 +260,8 @@ export default function MySchemes() {
         <main className="flex-1 max-w-5xl w-full mx-auto px-8 py-8 space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold font-display tracking-tight text-slate-900">My Schemes</h1>
-              <p className="text-sm text-slate-500 mt-1">Browse all available government schemes in our directory</p>
+              <h1 className="text-3xl font-bold font-display tracking-tight text-slate-900">{t('myschemes.title')}</h1>
+              <p className="text-sm text-slate-500 mt-1">{t('myschemes.subtitle')}</p>
             </div>
             
             {/* Category dropdown */}
@@ -273,7 +273,7 @@ export default function MySchemes() {
               >
                 {categories.map(cat => (
                   <option key={cat.value} value={cat.value} className="bg-white text-slate-700">
-                    {cat.label}
+                    {t(`myschemes.categories.${cat.key}`)}
                   </option>
                 ))}
               </select>
@@ -284,7 +284,7 @@ export default function MySchemes() {
           {loading ? (
             <div className="flex flex-col items-center py-24 gap-3">
               <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-              <span className="text-xs text-slate-500 uppercase font-semibold">Loading schemes...</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold">{t('common.loading')}</span>
             </div>
           ) : schemes.length === 0 ? (
             <div className="rounded-2xl p-16 text-center border border-slate-200 bg-white space-y-4 shadow-sm">
@@ -292,8 +292,8 @@ export default function MySchemes() {
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-sm text-slate-900">No Schemes Found</h3>
-                <p className="text-slate-500 text-xs mt-1">Try expanding your search parameters or category filter.</p>
+                <h3 className="font-bold text-sm text-slate-900">{t('dashboard.noMatchesFound')}</h3>
+                <p className="text-slate-500 text-xs mt-1">{t('dashboard.noMatchesSubtext')}</p>
               </div>
             </div>
           ) : (
@@ -336,7 +336,7 @@ export default function MySchemes() {
                           />
                         </button>
                         <span className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
-                          Available <Layers className="w-3 h-3" />
+                          {t('myschemes.available')} <Layers className="w-3 h-3" />
                         </span>
                       </div>
 
@@ -351,8 +351,8 @@ export default function MySchemes() {
 
                       <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 mt-auto">
                         <div className="truncate pr-2">
-                          <p className="text-[9px] text-slate-500 uppercase tracking-wider">Benefit</p>
-                          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || 'Check Details'}</p>
+                          <p className="text-[9px] text-slate-500 uppercase tracking-wider">{t('dashboard.benefitLabel')}</p>
+                          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || t('dashboard.checkDetails')}</p>
                         </div>
                         
                         <button
@@ -374,27 +374,27 @@ export default function MySchemes() {
                         {!schemeDetails[scheme.scheme_id] ? (
                           <div className="flex items-center gap-2 py-4 justify-center text-slate-500 font-semibold">
                             <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-                            <span>Loading details...</span>
+                            <span>{t('dashboard.loadingDetails')}</span>
                           </div>
                         ) : (
                           <>
                             {schemeDetails[scheme.scheme_id].details && (
                               <div>
-                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Scheme Details</h4>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.schemeDetails')}</h4>
                                 <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].details}</p>
                               </div>
                             )}
                             
                             {schemeDetails[scheme.scheme_id].eligibility && (
                               <div>
-                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Eligibility Criteria</h4>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.eligibilityCriteria')}</h4>
                                 <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].eligibility}</p>
                               </div>
                             )}
 
                             {schemeDetails[scheme.scheme_id].documents && (
                               <div>
-                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Required Documents</h4>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.requiredDocuments')}</h4>
                                 <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].documents}</p>
                               </div>
                             )}
@@ -413,17 +413,17 @@ export default function MySchemes() {
                         }}
                         className="flex-1 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all text-center"
                       >
-                        {isExpanded ? 'Less Info' : 'Learn More'}
+                        {isExpanded ? t('dashboard.collapseDetails') : t('dashboard.expandDetails')}
                       </button>
                       
                       <a
-                        href={`https://www.myscheme.gov.in/schemes/${scheme.slug}`}
+                        href={getApplyUrl(scheme)}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="flex-1 py-2 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-all text-center flex items-center justify-center gap-1.5"
                       >
-                        Apply Online <ArrowRight className="w-3 h-3" />
+                        {t('dashboard.applyOnline')} <ArrowRight className="w-3 h-3" />
                       </a>
                     </div>
                   </div>
@@ -443,11 +443,11 @@ export default function MySchemes() {
                 {loadingMore ? (
                   <>
                     <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(15,23,42,0.2)', borderTopColor: '#0f172a' }} />
-                    Loading...
+                    {t('common.loading')}
                   </>
                 ) : (
                   <>
-                    Load More Schemes
+                    {t('myschemes.loadMore')}
                     <ChevronDown className="w-4 h-4" />
                   </>
                 )}
@@ -459,3 +459,29 @@ export default function MySchemes() {
     </div>
   );
 }
+
+// Helper function to extract URLs from text
+const extractUrl = (text) => {
+  if (!text) return null;
+  const match = text.match(/https?:\/\/[^\s,\"\')]+/);
+  return match ? match[0] : null;
+};
+
+// Helper function to dynamically construct the application link
+const getApplyUrl = (scheme) => {
+  if (!scheme) return '#';
+
+  const isStatic = scheme.scheme_id < 100000;
+  if (isStatic && scheme.slug) {
+    return `https://www.myscheme.gov.in/schemes/${scheme.slug}`;
+  }
+
+  const urlFromApp = extractUrl(scheme.application);
+  if (urlFromApp) return urlFromApp;
+
+  const urlFromDetails = extractUrl(scheme.details);
+  if (urlFromDetails) return urlFromDetails;
+
+  return `https://www.google.com/search?q=how+to+apply+online+for+${encodeURIComponent(scheme.scheme_name)}`;
+};
+

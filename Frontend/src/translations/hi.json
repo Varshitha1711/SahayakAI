@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "सहायक AI",
-    "tagline": "नागरिकों और सरकारी सेवाओं को जोड़ना"
+    "tagline": "SAHAYAKAI - नागरिकों और सेवाओं को जोड़ना"
   },
   "auth": {
     "signInTitle": "स्वागत है",
@@ -109,6 +109,36 @@
   "dashboard": {
     "welcome": "नमस्ते",
     "portalActive": "नागरिक पोर्टल सक्रिय",
+    "greetingMorning": "शुभ प्रभात",
+    "greetingAfternoon": "शुभ दोपहर",
+    "greetingEvening": "शुभ संध्या",
+    "eligibleCount": "आप {{count}} नई योजनाओं के लिए पात्र हैं",
+    "statsEligible": "पात्र योजनाएं",
+    "statsVisited": "विज़िट की गई योजनाएं",
+    "statsBenefits": "कुल लाभ",
+    "topMatches": "आपके शीर्ष मिलान",
+    "searchResults": "\"{{query}}\" के लिए खोज परिणाम",
+    "viewAll": "सभी देखें",
+    "loadingMatches": "मिलान लोड हो रहे हैं...",
+    "noMatchesFound": "कोई मिलान नहीं मिला",
+    "noMatchesSubtext": "अनुशंसाएँ प्राप्त करने के लिए प्रोफ़ाइल संपादित करें में अधिक विवरण भरने का प्रयास करें।",
+    "updateProfile": "प्रोफ़ाइल अपडेट करें",
+    "emptySearch": "सरकारी योजनाओं को खोजने के लिए खोज बार में टाइप करें।",
+    "noSearchResults": "\"{{query}}\" से मेल खाने वाली कोई योजना नहीं मिली",
+    "recentlyViewed": "हाल ही में देखी गई",
+    "noRecentlyViewed": "अभी तक कोई हाल ही में देखी गई योजनाएं नहीं हैं।",
+    "youQualify": "आप पात्र हैं",
+    "benefitLabel": "लाभ",
+    "checkDetails": "विवरण जांचें",
+    "loadingDetails": "विवरण लोड हो रहा है...",
+    "collapseDetails": "कम जानकारी",
+    "expandDetails": "अधिक जानें",
+    "applyOnline": "ऑनलाइन आवेदन करें",
+    "voiceAssistantBrief": "वॉयस असिस्टेंट",
+    "voiceSpeakFarmer": "बोलें \"किसान\", \"छात्र\", आदि।",
+    "listeningSpeakNow": "सुन रहा हूँ... अब बोलें",
+    "youSaid": "आपने कहा:",
+    "speakToSahayak": "सहायक से बात करें",
     "uploadDocuments": "दस्तावेज़ अपलोड करें",
     "schemeDetails": "योजना का विवरण",
     "eligibilityCriteria": "पात्रता मानदंड",
@@ -224,5 +254,43 @@
     "suggested1": "मैं किन शिक्षा योजनाओं के लिए पात्र हूँ?",
     "suggested2": "मैं किसान सब्सिडी के लिए कैसे आवेदन करूँ?",
     "suggested3": "स्वास्थ्य योजनाओं के लिए मुझे किन दस्तावेजों की आवश्यकता है?"
+  },
+  "myschemes": {
+    "title": "मेरी योजनाएं",
+    "subtitle": "हमारी निर्देशिका में सभी उपलब्ध सरकारी योजनाओं को ब्राउज़ करें",
+    "searchPlaceholder": "सभी योजनाओं को खोजें...",
+    "available": "उपलब्ध",
+    "loadMore": "अधिक योजनाएं लोड करें",
+    "categories": {
+      "all": "सभी श्रेणियां",
+      "agriculture": "कृषि, ग्रामीण और पर्यावरण",
+      "education": "शिक्षा और शिक्षा",
+      "health": "स्वास्थ्य और कल्याण",
+      "banking": "बैंकिंग, वित्तीय सेवाएं और बीमा",
+      "welfare": "सामाजिक कल्याण और अधिकारिता",
+      "women": "महिला और बाल",
+      "business": "व्यवसाय और उद्यमिता"
+    }
+  },
+  "explore": {
+    "title": "योजनाएं खोजें",
+    "subtitle": "सरकारी नीतियों, पुरस्कारों, सबसिडी और केंद्रीय अनुदानों की खोज करें",
+    "searchPlaceholder": "कीवर्ड, टैग द्वारा खोजें...",
+    "welfareSchemes": "कल्याणकारी योजनाएं",
+    "statesCovered": "राज्य और केंद्र शासित प्रदेश",
+    "statesCoveredVal": "37 कवर्ड",
+    "activeMinistries": "सक्रिय मंत्रालय",
+    "activeMinistriesVal": "15+ विभाग",
+    "monthlyVisitors": "मासिक आगंतुक",
+    "browseByDept": "विभाग के अनुसार ब्राउज़ करें",
+    "targetCitizen": "लक्षित नागरिक:",
+    "allCitizens": "सभी नागरिक",
+    "filteredResults": "फ़िल्टर किए गए खोज परिणाम",
+    "trendingSchemes": "ट्रेंडिंग सरकारी योजनाएं",
+    "allSchemes": "सभी योजनाएं",
+    "central": "केंद्रीय",
+    "state": "राज्य",
+    "noSchemesExplore": "एक्सप्लोर फ़िल्टर से मेल खाने वाली कोई योजना नहीं है",
+    "noSchemesExploreSub": "कुछ क्वेरी इनपुट या फ़िल्टर टैग साफ़ करने का प्रयास करें।"
   }
 }
