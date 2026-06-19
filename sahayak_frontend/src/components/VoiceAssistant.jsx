@@ -95,7 +95,7 @@ export default function VoiceAssistant({ onCommand, activeLanguage }) {
             ? 'bg-red-500 hover:bg-red-600 animate-pulse-ring' 
             : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 hover:scale-105'
         }`}
-        title="Speak to Sahayak"
+        title={t('dashboard.speakToSahayak')}
       >
         {isListening ? (
           <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -111,13 +111,13 @@ export default function VoiceAssistant({ onCommand, activeLanguage }) {
       
       {isListening && (
         <span className="text-xs font-bold text-gradient-gold animate-bounce-dot uppercase tracking-widest">
-          Listening... Speak now
+          {t('dashboard.listeningSpeakNow')}
         </span>
       )}
       
       {transcript && !isListening && (
         <div className="glass px-4 py-2 rounded-xl text-xs text-indigo-200 text-center max-w-xs animate-slide-up">
-          <span className="font-semibold text-amber-400">You said:</span> "{transcript}"
+          <span className="font-semibold text-amber-400">{t('dashboard.youSaid')}</span> "{transcript}"
         </div>
       )}
       

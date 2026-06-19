@@ -1,0 +1,93 @@
+{
+  "100001": {
+    "scheme_id": 100001,
+    "scheme_name": "National Scholarship Portal (NSP)",
+    "slug": "national-scholarship-portal-nsp",
+    "details": "Merit-cum-means scholarship for students pursuing higher education",
+    "benefits": "Up to Rs. 10,000 per annum",
+    "eligibility": "General category students pursuing higher education",
+    "application": "https://scholarships.gov.in/",
+    "documents": "Admission letter, Fee receipt, ID proof, Income certificate",
+    "level": "Central",
+    "schemeCategory": "Education & Learning",
+    "tags": ""
+  },
+  "100002": {
+    "scheme_id": 100002,
+    "scheme_name": "Andhra Pradesh Chief Minister's Free Education Scheme",
+    "slug": "andhra-pradesh-chief-ministers-free-education-scheme",
+    "details": "Free education scheme for students pursuing education in Andhra Pradesh",
+    "benefits": "Free education up to graduation",
+    "eligibility": "General category students pursuing education in Andhra Pradesh",
+    "application": "https://epass.ap.gov.in/",
+    "documents": "Admission letter, Fee receipt, ID proof, Income certificate",
+    "level": "State",
+    "schemeCategory": "Education & Learning",
+    "tags": ""
+  },
+  "100003": {
+    "scheme_id": 100003,
+    "scheme_name": "National Pension System (NPS)",
+    "slug": "national-pension-system-nps",
+    "details": "Retirement savings scheme for individuals",
+    "benefits": "Up to Rs. 1,000 per month",
+    "eligibility": "General category students",
+    "application": "https://npscra.nsdl.co.in/",
+    "documents": "ID proof, Age proof, Income proof",
+    "level": "Central",
+    "schemeCategory": "Social Welfare & Empowerment",
+    "tags": ""
+  },
+  "100004": {
+    "scheme_id": 100004,
+    "scheme_name": "Andhra Pradesh Government Scholarships for Students",
+    "slug": "andhra-pradesh-government-scholarships-for-students",
+    "details": "Scholarships for students pursuing education in Andhra Pradesh",
+    "benefits": "Up to Rs. 5,000 per annum",
+    "eligibility": "General category students pursuing education in Andhra Pradesh",
+    "application": "https://epass.ap.gov.in/",
+    "documents": "Admission letter, Fee receipt, ID proof, Income certificate",
+    "level": "State",
+    "schemeCategory": "Education & Learning",
+    "tags": ""
+  },
+  "100005": {
+    "scheme_id": 100005,
+    "scheme_name": "National Means Cum Merit Scholarship (NMMS)",
+    "slug": "national-means-cum-merit-scholarship-nmms",
+    "details": "Merit-cum-means scholarship for students pursuing Class 9 and 10",
+    "benefits": "Up to Rs. 12,000 per annum",
+    "eligibility": "General category students pursuing Class 9 and 10",
+    "application": "https://nmms.gov.in/",
+    "documents": "Admission letter, Fee receipt, ID proof, Income certificate",
+    "level": "Central",
+    "schemeCategory": "Education & Learning",
+    "tags": ""
+  },
+  "100006": {
+    "scheme_id": 100006,
+    "scheme_name": "Andhra Pradesh Government Merit Scholarship",
+    "slug": "andhra-pradesh-government-merit-scholarship",
+    "details": "Merit scholarship for students pursuing higher education in Andhra Pradesh",
+    "benefits": "Up to Rs. 10,000 per annum",
+    "eligibility": "General category students pursuing higher education in Andhra Pradesh",
+    "application": "https://epass.ap.gov.in/",
+    "documents": "Admission letter, Fee receipt, ID proof, Income certificate",
+    "level": "State",
+    "schemeCategory": "Education & Learning",
+    "tags": ""
+  },
+  "100000": {
+    "scheme_id": 100000,
+    "scheme_name": "Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)",
+    "slug": "pm-kisan-samman-nidhi",
+    "details": "Financial assistance to small and marginal farmers",
+    "benefits": "Rs. 6,000 per year in three equal installments",
+    "eligibility": "Small and marginal farmers with landholding up to 2 hectares",
+    "application": "https://pmkisan.gov.in/ Apply through the official website",
+    "documents": "Aadhaar card, bank account details, land ownership documents",
+    "level": "Central",
+    "schemeCategory": "Agriculture & Rural Development",
+    "tags": ""
+  }
+}

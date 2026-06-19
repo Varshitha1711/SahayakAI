@@ -2,18 +2,46 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
-  User, MapPin, Briefcase, Award, GraduationCap, Heart, HelpCircle, 
-  Search, Volume2, VolumeX, Eye, ClipboardCheck, ArrowRight, LogOut 
+import {
+  User, MapPin, Briefcase, GraduationCap,
+  Search, Volume2, VolumeX, Eye, ClipboardCheck, ArrowRight, HelpCircle,
+  ChevronLeft, ChevronRight,
+  Bookmark, CheckCircle
 } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../contexts/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import VoiceAssistant, { speakText, stopSpeaking } from '../components/VoiceAssistant';
+import Sidebar from '../components/Sidebar';
+import { speakText, stopSpeaking } from '../components/VoiceAssistant';
+import ProfileMenu from '../components/ProfileMenu';
+
+// Helper to get category-based watermark background images
+const getCategoryBgImage = (category) => {
+  const cat = String(category || '').toLowerCase();
+  if (cat.includes('agriculture') || cat.includes('rural') || cat.includes('environment')) {
+    return 'https://images.unsplash.com/photo-1500937386664-56d159f8e9ad?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('education') || cat.includes('learning') || cat.includes('student')) {
+    return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('health') || cat.includes('wellness') || cat.includes('medical')) {
+    return 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('banking') || cat.includes('finance') || cat.includes('insurance') || cat.includes('business') || cat.includes('entrepreneur')) {
+    return 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('welfare') || cat.includes('empowerment') || cat.includes('social')) {
+    return 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&q=80&w=600';
+  }
+  if (cat.includes('women') || cat.includes('child') || cat.includes('girl')) {
+    return 'https://images.unsplash.com/photo-1519689680058-324335c77ebe?auto=format&fit=crop&q=80&w=600';
+  }
+  return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=600';
+};
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { currentUser, signOut } = useAuth();
+  const { currentUser } = useAuth();
 
   // State variables
   const [recommendations, setRecommendations] = useState([]);
@@ -25,7 +53,53 @@ export default function Dashboard() {
   const [speakingSchemeId, setSpeakingSchemeId] = useState(null);
   const [expandedSchemeId, setExpandedSchemeId] = useState(null);
   const [schemeDetails, setSchemeDetails] = useState({}); // stores full details by scheme_id
-  const [emblemLoaded, setEmblemLoaded] = useState(false);
+  const [visitedCount, setVisitedCount] = useState(0);
+
+  // Bookmarks State
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bookmarks_${currentUser?.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      const saved = localStorage.getItem(`bookmarks_${currentUser.id}`);
+      setBookmarks(saved ? JSON.parse(saved) : []);
+    }
+  }, [currentUser]);
+
+  const toggleBookmark = (schemeId) => {
+    let updated;
+    if (bookmarks.includes(schemeId)) {
+      updated = bookmarks.filter(id => id !== schemeId);
+    } else {
+      updated = [...bookmarks, schemeId];
+    }
+    setBookmarks(updated);
+    if (currentUser) {
+      localStorage.setItem(`bookmarks_${currentUser.id}`, JSON.stringify(updated));
+    }
+  };
+
+  const isBookmarked = (schemeId) => bookmarks.includes(schemeId);
+
+  const getSortedList = (list) => {
+    return [...list].sort((a, b) => {
+      const aBook = isBookmarked(a.scheme_id) ? 1 : 0;
+      const bBook = isBookmarked(b.scheme_id) ? 1 : 0;
+      return bBook - aBook;
+    });
+  };
+
+  // Pagination states
+  const [recPage, setRecPage] = useState(0);
+  const [recentPage, setRecentPage] = useState(0);
+  const REC_ITEMS_PER_PAGE = 6;
+  const RECENT_ITEMS_PER_PAGE = 3;
 
   // Load recommended schemes
   const loadRecommendations = async () => {
@@ -74,11 +148,17 @@ export default function Dashboard() {
     if (searchQuery.trim()) {
       handleSearch(searchQuery);
     }
-    
+
     // Load recently viewed from localStorage
     const saved = localStorage.getItem(`recently_viewed_${currentUser.id}`);
     if (saved) {
       setRecentlyViewed(JSON.parse(saved));
+    }
+
+    // Load visited count from localStorage
+    const savedVisited = localStorage.getItem(`visited_schemes_${currentUser.id}`);
+    if (savedVisited) {
+      setVisitedCount(JSON.parse(savedVisited).length);
     }
   }, [currentUser, i18n.language]);
 
@@ -88,32 +168,26 @@ export default function Dashboard() {
     handleSearch(text);
   };
 
-  // Profile completion calculation
-  const getProfileCompletion = () => {
-    if (!currentUser) return 0;
-    const fields = [
-      currentUser.age,
-      currentUser.gender,
-      currentUser.state,
-      currentUser.district,
-      currentUser.occupation,
-      currentUser.annual_income,
-      currentUser.category,
-      currentUser.education_level,
-      currentUser.marital_status
-    ];
-    const filled = fields.filter(val => val !== null && val !== undefined && val !== '').length;
-    return Math.round((filled / fields.length) * 100);
-  };
-
   // Track clicked schemes
   const handleSchemeClick = async (scheme) => {
     const isExpanding = expandedSchemeId !== scheme.scheme_id;
     setExpandedSchemeId(isExpanding ? scheme.scheme_id : null);
-    
-    const updated = [scheme, ...recentlyViewed.filter(s => s.scheme_id !== scheme.scheme_id)].slice(0, 5);
+
+    const updated = [scheme, ...recentlyViewed.filter(s => s.scheme_id !== scheme.scheme_id)].slice(0, 15);
     setRecentlyViewed(updated);
     localStorage.setItem(`recently_viewed_${currentUser?.id}`, JSON.stringify(updated));
+
+    // Visited tracking
+    let visitedList = [];
+    const savedVisited = localStorage.getItem(`visited_schemes_${currentUser?.id}`);
+    if (savedVisited) {
+      visitedList = JSON.parse(savedVisited);
+    }
+    if (!visitedList.includes(scheme.scheme_id)) {
+      visitedList.push(scheme.scheme_id);
+      localStorage.setItem(`visited_schemes_${currentUser?.id}`, JSON.stringify(visitedList));
+      setVisitedCount(visitedList.length);
+    }
 
     if (isExpanding && !schemeDetails[scheme.scheme_id]) {
       try {
@@ -135,8 +209,7 @@ export default function Dashboard() {
       setSpeakingSchemeId(null);
     } else {
       const details = schemeDetails[scheme.scheme_id] || scheme;
-      
-      // Localized speech labels
+
       const getSpeakLabels = (lang) => {
         switch (lang?.split('-')[0]) {
           case 'hi':
@@ -149,10 +222,10 @@ export default function Dashboard() {
             return { benefits: 'Benefits', eligibility: 'Eligibility' };
         }
       };
-      
+
       const labels = getSpeakLabels(i18n.language);
       const isExpanded = expandedSchemeId === scheme.scheme_id;
-      
+
       let textParts = [];
       if (details.schemeCategory) {
         textParts.push(details.schemeCategory);
@@ -164,366 +237,364 @@ export default function Dashboard() {
       if (isExpanded && details.eligibility) {
         textParts.push(`${labels.eligibility}: ${details.eligibility}`);
       }
-      
+
       const textToRead = textParts.join('. ');
-      
+
       speakText(textToRead, i18n.language, () => setSpeakingSchemeId(null));
       setSpeakingSchemeId(scheme.scheme_id);
     }
   };
 
+  // Helper parser for benefit numerical value to sum them up
+  const parseBenefitAmount = (benefitStr) => {
+    if (!benefitStr) return 0;
+    // Look for numbers in the benefit string
+    const match = benefitStr.replace(/,/g, '').match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
+  // Greeting helper based on local time
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return t('dashboard.greetingMorning');
+    if (hr < 17) return t('dashboard.greetingAfternoon');
+    return t('dashboard.greetingEvening');
+  };
+
+  // Card theme configurations
+  const getSchemeColors = (index) => {
+    const colors = [
+      { text: '#E98A15', iconBg: 'bg-amber-500/10' },
+      { text: '#25D366', iconBg: 'bg-emerald-500/10' },
+      { text: '#A855F7', iconBg: 'bg-purple-500/10' },
+    ];
+    return colors[index % colors.length];
+  };
+
+  const totalBenefits = recommendations.reduce((sum, s) => sum + parseBenefitAmount(s.benefits), 0) || 45000;
+
   return (
     <div
-      className="min-h-screen flex flex-col relative overflow-x-hidden text-white"
+      className="min-h-screen flex text-slate-900 overflow-hidden bg-slate-50"
       style={{
-        background: 'linear-gradient(145deg, #060E1C 0%, #0F1B30 30%, #1A2C50 65%, #243965 100%)',
+        background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)',
       }}
     >
-      {/* ── Background Elements ── */}
-      <div className="absolute inset-0 dot-pattern pointer-events-none" />
-      <div className="orb animate-float" style={{ width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(233,138,21,0.12) 0%, transparent 70%)', top: '-100px', right: '-100px' }} />
-      <div className="orb animate-float2" style={{ width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(62,92,138,0.15) 0%, transparent 70%)', bottom: '-50px', left: '-50px' }} />
+      <Sidebar activePage="dashboard" onVoiceCommand={handleVoiceCommand} />
 
-      {/* ── Navigation Header ── */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10 lg:px-16 border-b border-white/5 bg-white/[0.02] backdrop-blur-md">
-        <Link to="/" className="flex items-center gap-3">
-          {emblemLoaded ? (
-            <img 
-              src="/src/assets/emblem.png" 
-              alt="State Emblem of India" 
-              className="w-auto object-contain"
-              style={{ 
-                filter: 'url(#gold-emblem) drop-shadow(0 0 4px rgba(233,138,21,0.5))',
-                clipPath: 'inset(11% 13% 11% 13%)',
-                marginLeft: '-14px',
-                marginRight: '-14px',
-                height: '50px'
+      {/* ── Dashboard Content Wrapper ── */}
+      <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+
+        {/* ── Header ── */}
+        <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-5 border-b border-slate-200 bg-white/70 backdrop-blur-md">
+          {/* Search bar */}
+          <div className="relative w-80">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setActiveTab('search');
+                handleSearch(e.target.value);
               }}
+              placeholder={t('dashboard.searchPlaceholder')}
+              className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white text-slate-900"
             />
-          ) : (
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="rgba(255,255,255,0.2)" />
-                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+          </div>
+
+          {/* Action icons & Profile */}
+          <div className="flex items-center gap-6">
+            <LanguageSwitcher />
+            <div className="relative">
+              <ProfileMenu />
             </div>
-          )}
-          <span className="font-display text-lg font-bold tracking-tight">Sahayak AI</span>
-        </Link>
+          </div>
+        </header>
 
-        {/* Hidden Image for automatic asset-existence detection */}
-        <img 
-          src="/src/assets/emblem.png" 
-          alt="" 
-          style={{ display: 'none' }} 
-          onLoad={() => setEmblemLoaded(true)} 
-        />
+        {/* ── Main Dashboard Body ── */}
+        <main className="flex-1 max-w-5xl w-full mx-auto px-8 py-8 space-y-8 overflow-y-auto">
 
-        <div className="flex items-center gap-4">
-          <Link to="/documents" className="text-xs font-semibold text-indigo-200 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-all flex items-center gap-1.5">
-            <ClipboardCheck className="w-4 h-4 text-amber-500" />
-            {t('dashboard.uploadDocuments')}
-          </Link>
-          <LanguageSwitcher />
-          <button
-            onClick={signOut}
-            className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 hover:bg-red-500/10 hover:text-red-400 border border-white/10 transition-all"
-            title={t('auth.signOut', 'Log Out')}
-          >
-            <LogOut className="w-4.5 h-4.5" />
-          </button>
-        </div>
-      </header>
+          {/* Greeting Title */}
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold font-display tracking-tight text-slate-900">
+              {getGreeting()}, {currentUser?.full_name} 👋
+            </h1>
+            <p className="text-sm text-slate-600">
+              {t('dashboard.eligibleCount', { count: recommendations.length })}
+            </p>
+          </div>
 
-      {/* ── Dashboard Grid ── */}
-      <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left/Middle Column (Main Dashboard Content) */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Welcome Card */}
-          <div className="glass rounded-3xl p-6 relative overflow-hidden border border-white/10">
-            <div className="space-y-3 animate-fade-up">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                {t('dashboard.portalActive')}
+          {/* Statistics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Eligible Schemes Card */}
+            <div 
+              onClick={() => navigate('/my-schemes')}
+              className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02] cursor-pointer hover:border-amber-500/40 relative group"
+              style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid rgba(245,158,11,0.3)' }}>
+              <div className="flex justify-between items-start">
+                <span className="text-3xl font-extrabold text-amber-500">{recommendations.length}</span>
+                <ChevronRight className="w-5 h-5 text-amber-500/40 group-hover:text-amber-500 transition-colors" />
               </div>
-              <h1 className="text-2xl font-bold font-display">{t('dashboard.welcome')}, {currentUser?.full_name}</h1>
-              <p className="text-indigo-200/60 text-xs leading-relaxed max-w-md">
-                {t('dashboard.summaryText')}{' '}
-                <strong className="text-white">
-                  {currentUser?.district ? `(${currentUser.district}, ${currentUser.state})` : ''}
-                </strong>
-              </p>
-              
-              {/* Profile Chip Summary */}
-              <div className="flex flex-wrap gap-2 pt-2 text-xs">
-                <span className="bg-white/5 px-2.5 py-1 rounded-full border border-white/5 flex items-center gap-1.5">
-                  <User className="w-3 h-3 text-indigo-400" /> 
-                  {currentUser?.age} {t('common.years', 'Yrs')} · {t(`onboarding.options.gender.${currentUser?.gender?.toLowerCase()}`, currentUser?.gender)}
-                </span>
-                <span className="bg-white/5 px-2.5 py-1 rounded-full border border-white/5 flex items-center gap-1.5">
-                  <MapPin className="w-3 h-3 text-indigo-400" /> {currentUser?.state}
-                </span>
-                <span className="bg-white/5 px-2.5 py-1 rounded-full border border-white/5 flex items-center gap-1.5">
-                  <Briefcase className="w-3 h-3 text-indigo-400" /> {t(`onboarding.options.occupation.${currentUser?.occupation?.toLowerCase()}`, currentUser?.occupation)}
-                </span>
-                <span className="bg-white/5 px-2.5 py-1 rounded-full border border-white/5 flex items-center gap-1.5">
-                  <GraduationCap className="w-3 h-3 text-indigo-400" /> 
-                  {t(`onboarding.options.education.${currentUser?.education_level === '10th' ? 'below10' : currentUser?.education_level === 'Intermediate' ? 'intermediate' : currentUser?.education_level === 'UG' ? 'ug' : currentUser?.education_level === 'PG' ? 'pg' : currentUser?.education_level === 'PhD' ? 'phd' : 'any'}`, currentUser?.education_level)}
-                </span>
+              <span className="text-sm font-semibold text-amber-500/80 flex items-center gap-1">{t('dashboard.statsEligible')}</span>
+            </div>
+
+            {/* Visited Card */}
+            <div 
+              onClick={() => navigate('/my-schemes')}
+              className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02] cursor-pointer hover:border-emerald-500/40 relative group"
+              style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1.5px solid rgba(16,185,129,0.3)' }}>
+              <div className="flex justify-between items-start">
+                <span className="text-3xl font-extrabold text-emerald-500">{visitedCount}</span>
+                <ChevronRight className="w-5 h-5 text-emerald-500/40 group-hover:text-emerald-500 transition-colors" />
               </div>
+              <span className="text-sm font-semibold text-emerald-500/80">{t('dashboard.statsVisited')}</span>
+            </div>
+
+            {/* Total Benefits Card */}
+            <div className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)', border: '1.5px solid rgba(168,85,247,0.3)' }}>
+              <span className="text-3xl font-extrabold text-purple-400">₹{totalBenefits.toLocaleString('en-IN')}</span>
+              <span className="text-sm font-semibold text-purple-400/80">{t('dashboard.statsBenefits')}</span>
             </div>
           </div>
 
-          {/* ── Switch Tabs (Eligible vs Live Search) ── */}
-          <div className="flex border-b border-white/5 gap-6">
-            <button
-              onClick={() => setActiveTab('eligible')}
-              className={`pb-3 text-sm font-bold tracking-wide transition-all border-b-2 ${
-                activeTab === 'eligible' 
-                  ? 'text-amber-400 border-amber-400' 
-                  : 'text-indigo-300/50 border-transparent hover:text-indigo-200'
-              }`}
-            >
-              {t('dashboard.tabs.eligible')} ({recommendations.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('search')}
-              className={`pb-3 text-sm font-bold tracking-wide transition-all border-b-2 ${
-                activeTab === 'search' 
-                  ? 'text-amber-400 border-amber-400' 
-                  : 'text-indigo-300/50 border-transparent hover:text-indigo-200'
-              }`}
-            >
-              {t('dashboard.tabs.search')}
-            </button>
-          </div>
-
-          {/* ── Search Input (Only shown in Search Tab or as quick access) ── */}
-          {activeTab === 'search' && (
-            <div className="relative w-full animate-slide-up">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder={t('dashboard.searchPlaceholder')}
-                className="w-full bg-white/[0.03] border-2 border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all duration-200 focus:border-amber-500 focus:bg-white/[0.05] text-white"
-              />
-              <Search className="w-5 h-5 text-indigo-400/50 absolute left-4 top-3.5" />
-            </div>
-          )}
-
-          {/* ── Schemes Feeds ── */}
+          {/* Feed Content */}
           <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-bold font-display text-slate-900">
+                  {activeTab === 'eligible' ? t('dashboard.topMatches') : t('dashboard.searchResults', { query: searchQuery })}
+                </h2>
+                {activeTab === 'eligible' && (
+                  <Link 
+                    to="/my-schemes" 
+                    className="text-xs font-semibold text-amber-500 hover:text-amber-400 flex items-center gap-0.5 hover:underline"
+                  >
+                    {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+              {/* Pagination for Feed */}
+              {((activeTab === 'eligible' && recommendations.length > REC_ITEMS_PER_PAGE) || 
+                (activeTab === 'search' && searchResults.length > REC_ITEMS_PER_PAGE)) && (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setRecPage(p => Math.max(0, p - 1))}
+                    disabled={recPage === 0}
+                    className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setRecPage(p => p + 1)}
+                    disabled={
+                      activeTab === 'eligible' 
+                        ? (recPage + 1) * REC_ITEMS_PER_PAGE >= recommendations.length 
+                        : (recPage + 1) * REC_ITEMS_PER_PAGE >= searchResults.length
+                    }
+                    className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             {loading && activeTab === 'eligible' ? (
               <div className="flex flex-col items-center py-16 gap-3">
                 <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-                <span className="text-xs text-indigo-300/60 uppercase font-semibold">{t('common.loading')}</span>
+                <span className="text-xs text-slate-500 uppercase font-semibold">{t('dashboard.loadingMatches')}</span>
               </div>
             ) : activeTab === 'eligible' ? (
               recommendations.length === 0 ? (
-                <div className="glass rounded-2xl p-10 text-center border border-white/5 space-y-4 animate-fade-up">
-                  <div className="w-12 h-12 rounded-full bg-white/5 mx-auto flex items-center justify-center text-indigo-300">
+                <div className="rounded-2xl p-10 text-center border border-slate-200 bg-white/50 space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 mx-auto flex items-center justify-center text-slate-500">
                     <HelpCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm">{t('dashboard.noSchemes')}</h3>
-                    <p className="text-indigo-300/50 text-xs mt-1">{t('dashboard.noSchemesSubtext')}</p>
+                    <h3 className="font-bold text-slate-900 text-sm">{t('dashboard.noMatchesFound')}</h3>
+                    <p className="text-slate-500 text-xs mt-1">{t('dashboard.noMatchesSubtext')}</p>
                   </div>
-                  <Link to="/onboarding" className="btn-gold inline-flex w-auto px-6 py-2.5 text-xs">{t('dashboard.updateProfile')}</Link>
+                  <Link to="/profile" className="inline-block px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs transition-colors hover:bg-amber-400">{t('dashboard.updateProfile')}</Link>
                 </div>
               ) : (
-                recommendations.map(scheme => renderSchemeCard(scheme))
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {getSortedList(recommendations).slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
+                </div>
               )
             ) : (
-              // Search tab
+              // Search Results
               searchQuery.trim() === '' ? (
-                <div className="glass rounded-2xl p-10 text-center border border-white/5 text-indigo-300/40 text-xs animate-fade-up">
+                <div className="rounded-2xl p-10 text-center border border-slate-200 bg-white/50 text-slate-500 text-xs">
                   {t('dashboard.emptySearch')}
                 </div>
               ) : searchResults.length === 0 ? (
-                <div className="glass rounded-2xl p-10 text-center border border-white/5 text-indigo-300/40 text-xs animate-fade-up">
-                  {t('dashboard.noSearchResults')} "{searchQuery}"
+                <div className="rounded-2xl p-10 text-center border border-slate-200 bg-white/50 text-slate-500 text-xs">
+                  {t('dashboard.noSearchResults', { query: searchQuery })}
                 </div>
               ) : (
-                searchResults.map(scheme => renderSchemeCard(scheme))
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {getSortedList(searchResults).slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
+                </div>
               )
             )}
           </div>
-        </div>
 
-        {/* Right Side Column (Voice Assistant & History) */}
-        <div className="space-y-6">
-          
-          {/* Voice Assistant Module */}
-          <div className="glass-card rounded-3xl p-6 border border-white/10 flex flex-col items-center text-center space-y-4 relative overflow-hidden animate-fade-up">
-            {/* Pulsing ring indicator */}
-            <div className="absolute -top-12 -left-12 w-24 h-24 rounded-full bg-amber-500/5 filter blur-xl" />
-            
-            <div className="space-y-1.5">
-              <h2 className="text-sm font-bold font-display uppercase tracking-widest text-amber-400">{t('dashboard.voiceAssistant')}</h2>
-              <p className="text-indigo-200/50 text-xs leading-relaxed px-4">
-                {t('dashboard.voiceDesc')}
-              </p>
+          {/* Recently Viewed Section */}
+          <div className="space-y-4 pt-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-bold font-display text-slate-900">{t('dashboard.recentlyViewed')}</h2>
+              {recentlyViewed.length > RECENT_ITEMS_PER_PAGE && (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setRecentPage(p => Math.max(0, p - 1))}
+                    disabled={recentPage === 0}
+                    className="w-8 h-8 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center text-indigo-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setRecentPage(p => p + 1)}
+                    disabled={(recentPage + 1) * RECENT_ITEMS_PER_PAGE >= recentlyViewed.length}
+                    className="w-8 h-8 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center text-indigo-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
-            
-            {/* The Floating mic toggle button */}
-            <VoiceAssistant 
-              activeLanguage={i18n.language} 
-              onCommand={handleVoiceCommand} 
-            />
 
-            <div className="pt-2 text-[10px] text-indigo-400/60 leading-normal border-t border-white/5 w-full space-y-1">
-              <p>{t('dashboard.voiceTry')} <strong>"Farmer"</strong> / <strong>"Student"</strong></p>
-              <p>{t('dashboard.voiceSupports')}</p>
-            </div>
-          </div>
-
-          {/* Recently Viewed Schemes */}
-          <div className="glass rounded-3xl p-6 border border-white/5 space-y-4 animate-fade-up">
-            <h2 className="text-xs font-bold font-display uppercase tracking-widest text-indigo-300 flex items-center gap-2">
-              <Eye className="w-4 h-4 text-indigo-400" /> {t('dashboard.recentlyViewed')}
-            </h2>
             {recentlyViewed.length === 0 ? (
-              <p className="text-indigo-300/40 text-xs">{t('dashboard.noRecentlyViewed')}</p>
+              <p className="text-slate-500 text-xs">{t('dashboard.noRecentlyViewed')}</p>
             ) : (
-              <div className="space-y-2.5">
-                {recentlyViewed.map((scheme, index) => {
-                  const matched = 
-                    recommendations.find(r => r.scheme_id === scheme.scheme_id) ||
-                    searchResults.find(r => r.scheme_id === scheme.scheme_id) ||
-                    schemeDetails[scheme.scheme_id];
-                  
-                  const displayName = matched ? matched.scheme_name : scheme.scheme_name;
-                  const displayCategory = matched ? matched.schemeCategory : scheme.schemeCategory;
-                  
-                  return (
-                    <div 
-                      key={index} 
-                      onClick={async () => {
-                        const targetTab = recommendations.some(r => r.scheme_id === scheme.scheme_id) ? 'eligible' : 'search';
-                        setActiveTab(targetTab);
-                        setExpandedSchemeId(scheme.scheme_id);
-                        
-                        if (!schemeDetails[scheme.scheme_id]) {
-                          try {
-                            const response = await axios.get(`${API_BASE_URL}/schemes/${scheme.scheme_id}`, {
-                              params: { lang: i18n.language }
-                            });
-                            setSchemeDetails(prev => ({ ...prev, [scheme.scheme_id]: response.data }));
-                          } catch (err) {
-                            console.error('Failed to load scheme details:', err);
-                          }
-                        }
-                      }}
-                      className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] cursor-pointer transition-all flex items-center justify-between"
-                    >
-                      <div className="truncate pr-4">
-                        <p className="text-xs font-semibold truncate text-indigo-100">{displayName}</p>
-                        <p className="text-[10px] text-indigo-400/60 mt-0.5">{displayCategory || t('onboarding.options.category.general')}</p>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-indigo-400/50 flex-shrink-0" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {recentlyViewed.slice(recentPage * RECENT_ITEMS_PER_PAGE, (recentPage + 1) * RECENT_ITEMS_PER_PAGE).map((scheme, index) => (
+                  <div
+                    key={index}
+                    onClick={async () => {
+                      setActiveTab('eligible');
+                      handleSchemeClick(scheme);
+                    }}
+                    className="p-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 cursor-pointer transition-all flex items-center justify-between"
+                  >
+                    <div className="truncate pr-4 space-y-0.5">
+                      <p className="text-xs font-semibold truncate text-slate-900">{scheme.scheme_name}</p>
+                      <p className="text-[10px] text-slate-500">{scheme.schemeCategory || 'General'}</p>
                     </div>
-                  );
-                })}
+                    <ArrowRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
-      </main>
-      {/* Chroma key filter for converting white-to-transparent and black-to-gold */}
-      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
-        <defs>
-          <filter id="gold-emblem">
-            <feColorMatrix 
-              type="matrix" 
-              values="0 0 0 0 0.91
-                      0 0 0 0 0.54
-                      0 0 0 0 0.08
-                      -0.333 -0.333 -0.333 0 1" 
-            />
-          </filter>
-        </defs>
-      </svg>
+
+        </main>
+      </div>
     </div>
   );
 
-  // Helper renderer for individual Scheme Cards
-  function renderSchemeCard(scheme) {
+  // Redesigned scheme card matching the mockup design
+  function renderMockupSchemeCard(scheme, index) {
     const isExpanded = expandedSchemeId === scheme.scheme_id;
     const isSpeaking = speakingSchemeId === scheme.scheme_id;
+    const colors = getSchemeColors(index);
 
     return (
-      <div 
-        key={scheme.scheme_id} 
+      <div
+        key={scheme.scheme_id}
         onClick={() => handleSchemeClick(scheme)}
-        className="glass-card rounded-2xl p-5 border border-white/[0.08] hover:border-white/20 transition-all cursor-pointer space-y-3 relative group"
+        className="rounded-2xl p-6 flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 cursor-pointer bg-white border border-slate-200 hover:bg-slate-50 shadow-sm hover:shadow-md relative group h-full overflow-hidden"
+        style={{ borderTop: `4px solid ${colors.text}` }}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <span className="inline-block bg-amber-500/10 text-amber-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-amber-500/20">
-              {scheme.schemeCategory || t('onboarding.options.category.general')}
+        {/* Subtle Watermark Background Image */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-[0.08] transition-all group-hover:scale-105 duration-500" 
+          style={{ backgroundImage: `url(${getCategoryBgImage(scheme.schemeCategory)})` }} 
+        />
+
+        <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
+          {/* Top Row: Icon + Badge */}
+          <div className="flex justify-between items-start">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark(scheme.scheme_id);
+              }}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isBookmarked(scheme.scheme_id) 
+                  ? 'bg-amber-500 text-white shadow-md' 
+                  : `${colors.iconBg} hover:bg-slate-200`
+              }`}
+            >
+              <Bookmark 
+                className="w-5 h-5" 
+                style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }} 
+                fill={isBookmarked(scheme.scheme_id) ? '#ffffff' : 'none'}
+              />
+            </button>
+            <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1">
+              {t('dashboard.youQualify')} <CheckCircle className="w-3 h-3" />
             </span>
-            <h3 className="font-semibold text-sm leading-snug group-hover:text-amber-400 transition-colors pr-2 text-white">
+          </div>
+
+          {/* Scheme Title & Ministry */}
+          <div className="space-y-1">
+            <h3 className="font-bold text-slate-900 text-sm leading-snug group-hover:text-amber-500 transition-colors">
               {scheme.scheme_name}
             </h3>
+            <p className="text-xs text-slate-500 line-clamp-1">
+              {scheme.schemeCategory || "Ministry of General Affairs"}
+            </p>
           </div>
-          
-          {/* TTS Listen Button */}
-          <button
-            onClick={(e) => handleSpeak(scheme, e)}
-            className={`w-8 h-8 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${
-              isSpeaking 
-                ? 'bg-amber-50 border-amber-500 text-white animate-pulse' 
-                : 'bg-white/5 border-white/10 hover:border-amber-500/50 text-indigo-300 hover:text-amber-400'
-            }`}
-            title={isSpeaking ? 'Stop speech' : 'Listen to scheme details'}
-          >
-            {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+
+          {/* Benefit & TTS */}
+          <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 mt-auto">
+            <div className="truncate pr-2">
+              <p className="text-[9px] text-slate-500 uppercase tracking-wider">{t('dashboard.benefitLabel')}</p>
+              <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || t('dashboard.checkDetails')}</p>
+            </div>
+
+            <button
+              onClick={(e) => handleSpeak(scheme, e)}
+              className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 transition-all ${isSpeaking
+                ? 'bg-amber-500 border-amber-500 text-white animate-pulse'
+                : 'bg-white border-slate-200 hover:border-amber-500/50 text-slate-500 hover:text-amber-500'
+                }`}
+            >
+              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
 
-        {/* Benefits Preview */}
-        <p className="text-xs text-indigo-200/70 line-clamp-2 leading-relaxed">
-          {scheme.benefits || 'No details provided.'}
-        </p>
-
-        {/* Collapsible expanded details */}
+        {/* Collapsible details */}
         {isExpanded && (
-          <div className="pt-4 border-t border-white/5 space-y-4 text-xs text-indigo-200/80 animate-fade-in">
+          <div className="mb-4 pt-2 border-t border-slate-200 space-y-4 text-xs text-slate-600 animate-fade-in relative z-10">
             {!schemeDetails[scheme.scheme_id] ? (
-              <div className="flex items-center gap-2 py-4 justify-center text-indigo-300/60 font-semibold">
+              <div className="flex items-center gap-2 py-4 justify-center text-slate-500 font-semibold">
                 <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-                <span>{t('common.loading', 'Loading details...')}</span>
+                <span>{t('dashboard.loadingDetails')}</span>
               </div>
             ) : (
               <>
                 {schemeDetails[scheme.scheme_id].details && (
                   <div>
-                    <h4 className="font-bold text-white mb-1.5 uppercase tracking-wide text-[10px] text-amber-500">{t('dashboard.schemeDetails')}</h4>
-                    <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].details}</p>
+                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.schemeDetails')}</h4>
+                    <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].details}</p>
                   </div>
                 )}
-                
+
                 {schemeDetails[scheme.scheme_id].eligibility && (
                   <div>
-                    <h4 className="font-bold text-white mb-1.5 uppercase tracking-wide text-[10px] text-amber-500">{t('dashboard.eligibilityCriteria')}</h4>
-                    <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].eligibility}</p>
+                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.eligibilityCriteria')}</h4>
+                    <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].eligibility}</p>
                   </div>
                 )}
 
                 {schemeDetails[scheme.scheme_id].documents && (
                   <div>
-                    <h4 className="font-bold text-white mb-1.5 uppercase tracking-wide text-[10px] text-amber-500">{t('dashboard.requiredDocuments')}</h4>
-                    <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].documents}</p>
-                  </div>
-                )}
-
-                {schemeDetails[scheme.scheme_id].application && (
-                  <div>
-                    <h4 className="font-bold text-white mb-1.5 uppercase tracking-wide text-[10px] text-amber-500">{t('dashboard.howToApply')}</h4>
-                    <p className="leading-relaxed bg-white/[0.01] p-3 rounded-xl border border-white/5">{schemeDetails[scheme.scheme_id].application}</p>
+                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.requiredDocuments')}</h4>
+                    <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].documents}</p>
                   </div>
                 )}
               </>
@@ -531,14 +602,56 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="flex items-center justify-between text-[10px] text-indigo-300/40 pt-1">
-          <span>{t('dashboard.schemeLevel')}: {scheme.level || 'Central / State'}</span>
-          <span className="font-semibold text-amber-400/70 group-hover:underline flex items-center gap-1">
-            {isExpanded ? t('dashboard.collapseDetails') : t('dashboard.expandDetails')} 
-            <ArrowRight className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-          </span>
+        {/* Buttons Row */}
+        <div className="flex gap-2.5 mt-auto pt-2 relative z-10">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSchemeClick(scheme);
+            }}
+            className="flex-1 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all text-center"
+          >
+            {isExpanded ? t('dashboard.collapseDetails') : t('dashboard.expandDetails')}
+          </button>
+
+          <a
+            href={getApplyUrl(scheme)}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 py-2 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-all text-center flex items-center justify-center gap-1.5"
+          >
+            {t('dashboard.applyOnline')} <ArrowRight className="w-3 h-3" />
+          </a>
         </div>
       </div>
     );
   }
 }
+
+// Helper function to extract URLs from text
+const extractUrl = (text) => {
+  if (!text) return null;
+  const match = text.match(/https?:\/\/[^\s,\"\')]+/);
+  return match ? match[0] : null;
+};
+
+// Helper function to dynamically construct the application link
+const getApplyUrl = (scheme) => {
+  if (!scheme) return '#';
+  
+  const isStatic = scheme.scheme_id < 100000;
+  if (isStatic && scheme.slug) {
+    return `https://www.myscheme.gov.in/schemes/${scheme.slug}`;
+  }
+  
+  const urlFromApp = extractUrl(scheme.application);
+  if (urlFromApp) return urlFromApp;
+  
+  const urlFromDetails = extractUrl(scheme.details);
+  if (urlFromDetails) return urlFromDetails;
+  
+  return `https://www.google.com/search?q=how+to+apply+online+for+${encodeURIComponent(scheme.scheme_name)}`;
+};
+

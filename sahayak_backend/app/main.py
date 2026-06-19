@@ -6,17 +6,23 @@ from app.routes.auth import router as auth_router
 from app.routes.profile import router as profile_router
 from app.routes.schemes import router as schemes_router
 from app.routes.documents import router as documents_router
+from app.routes.chat import router as chat_router
 
 # Attempt to auto-create tables in Supabase on startup
+from sqlalchemy import text
 try:
     Base.metadata.create_all(bind=engine)
+    # Seamless migration for email_notifications column
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_notifications BOOLEAN DEFAULT TRUE;"))
+        conn.commit()
     print("Database tables synchronized successfully.")
 except Exception as e:
     print(f"Startup Warning: Could not sync database tables (normal if .env connection credentials are placeholder): {e}")
 
 app = FastAPI(
     title="Sahayak AI API",
-    description="Bridging Citizens and Government Services in India",
+    description="SAHAYAKAI - Bridging Citizens and Services in India",
     version="1.0.0"
 )
 
@@ -39,6 +45,7 @@ app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(schemes_router)
 app.include_router(documents_router)
+app.include_router(chat_router)
 
 @app.get("/")
 def read_root():
@@ -46,5 +53,5 @@ def read_root():
     return {
         "app": "Sahayak AI API",
         "status": "healthy",
-        "tagline": "Bridging Citizens and Government Services"
+        "tagline": "SAHAYAKAI - Bridging Citizens and Services"
     }

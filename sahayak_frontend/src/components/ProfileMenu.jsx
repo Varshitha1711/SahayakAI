@@ -2,37 +2,36 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-/* ── Helpers ──────────────────────────────── */
-
-/** Get initials from email, e.g. "chaitanya@gmail.com" → "C" */
+/* ── Helpers ────────────────────────────────────── */
 function getInitial(user) {
-  if (user?.displayName) return user.displayName[0].toUpperCase();
-  if (user?.email) return user.email[0].toUpperCase();
+  if (user?.full_name) return user.full_name[0].toUpperCase();
+  if (user?.email)     return user.email[0].toUpperCase();
   return '?';
 }
-
-/** Truncate long email for display */
-function truncateEmail(email, max = 26) {
-  if (!email) return '';
-  return email.length > max ? email.slice(0, max) + '…' : email;
+function truncate(str, max = 26) {
+  if (!str) return '';
+  return str.length > max ? str.slice(0, max) + '…' : str;
 }
 
-/* ── Menu items config ────────────────────── */
+/* ── Menu config ────────────────────────────────── */
 const MENU_ITEMS = [
   {
-    id: 'settings',
-    label: 'Settings',
+    id: 'profile',
+    label: 'Edit Profile',
+    route: '/profile',
+    danger: false,
     icon: (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
       </svg>
     ),
-    danger: false,
   },
   {
     id: 'help',
     label: 'Help & Support',
+    route: '/help',
+    danger: false,
     icon: (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10"/>
@@ -40,11 +39,12 @@ const MENU_ITEMS = [
         <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
     ),
-    danger: false,
   },
   {
     id: 'signout',
     label: 'Sign Out',
+    route: null,
+    danger: true,
     icon: (
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -52,26 +52,22 @@ const MENU_ITEMS = [
         <line x1="21" y1="12" x2="9" y2="12"/>
       </svg>
     ),
-    danger: true,
   },
 ];
 
-/* ── Main component ───────────────────────── */
-
-export default function ProfileMenu({ darkMode = true }) {
+/* ── Main component ─────────────────────────────── */
+export default function ProfileMenu() {
   const { currentUser, signOut } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]             = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef                     = useRef(null);
 
-  /* Close when clicking outside */
+  /* Close on outside click */
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -92,134 +88,116 @@ export default function ProfileMenu({ darkMode = true }) {
       await signOut();
       navigate('/');
     } catch (err) {
-      console.error('Sign out failed:', err);
-    } finally {
+      console.error('Sign out error:', err);
       setSigningOut(false);
     }
   };
 
-  const handleItem = (id) => {
-    if (id === 'signout') {
-      handleSignOut();
-    }
-    // Settings and Help & Support: coming soon — close dropdown for now
-    if (id !== 'signout') setOpen(false);
+  const handleItem = (item) => {
+    if (item.id === 'signout') { handleSignOut(); return; }
+    setOpen(false);
+    navigate(item.route);
   };
 
   if (!currentUser) return null;
 
   const initial = getInitial(currentUser);
-  const email = truncateEmail(currentUser.email);
-
-  /* Colour tokens based on context (dark hero vs light auth panel) */
-  const avatarStyle = darkMode
-    ? { background: 'linear-gradient(135deg, #E98A15, #F0A23E)', boxShadow: '0 4px 16px rgba(233,138,21,0.45)' }
-    : { background: 'linear-gradient(135deg, #E98A15, #F0A23E)', boxShadow: '0 4px 16px rgba(233,138,21,0.3)' };
+  const name    = currentUser.full_name || 'My Account';
+  const email   = truncate(currentUser.email);
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* Avatar button */}
+
+      {/* ── Avatar trigger ── */}
       <button
         id="profile-menu-btn"
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2.5 rounded-full transition-all duration-200 focus:outline-none"
         aria-label="Open profile menu"
         aria-expanded={open}
         aria-haspopup="true"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 rounded-full focus:outline-none group"
       >
-        {/* Avatar circle */}
         <div
-          className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm flex-shrink-0 select-none transition-transform duration-200 hover:scale-105 active:scale-95"
-          style={avatarStyle}
+          className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm flex-shrink-0 select-none transition-transform duration-150 group-hover:scale-105 active:scale-95"
+          style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)', boxShadow: '0 4px 16px rgba(233,138,21,0.45)' }}
         >
-          {initial}
+          {signingOut ? (
+            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.3"/>
+              <path d="M22 12a10 10 0 00-10-10" strokeLinecap="round"/>
+            </svg>
+          ) : initial}
         </div>
-
-        {/* Chevron (on dark bg only) */}
-        {darkMode && (
-          <svg
-            className={`w-3.5 h-3.5 text-white/60 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        )}
+        <svg
+          className={`w-3.5 h-3.5 text-white/60 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+          strokeLinecap="round" strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
       </button>
 
-      {/* Dropdown */}
+      {/* ── Dropdown ── */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-3 w-64 rounded-2xl overflow-hidden z-50 animate-slide-up"
+          className="absolute right-0 top-full mt-3 w-64 rounded-2xl overflow-hidden z-50"
           style={{
-            background: 'white',
-            border: '2px solid #EEF2F8',
-            boxShadow: '0 20px 60px -10px rgba(15,27,48,0.2), 0 4px 20px rgba(15,27,48,0.08)',
+            background: '#0F1B30',
+            border: '1.5px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 4px 20px rgba(0,0,0,0.4)',
+            transformOrigin: 'top right',
+            animation: 'ninja-scroll 0.25s cubic-bezier(0.16,1,0.3,1) both',
           }}
           role="menu"
-          aria-label="Profile options"
         >
-          {/* User info header */}
+          {/* User header */}
           <div
             className="px-4 py-4 flex items-center gap-3"
-            style={{ background: 'linear-gradient(135deg, #F5F7FC, #EEF2F8)' }}
+            style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
           >
             <div
               className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-base flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)', boxShadow: '0 4px 12px rgba(233,138,21,0.35)' }}
+              style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)', boxShadow: '0 4px 12px rgba(233,138,21,0.4)' }}
             >
               {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-ink truncate">
-                {currentUser.displayName || 'My Account'}
-              </p>
+              <p className="text-sm font-semibold text-white truncate">{name}</p>
               <p className="text-xs text-indigo-400 truncate mt-0.5">{email}</p>
-              {currentUser.emailVerified && (
-                <div className="flex items-center gap-1 mt-1">
-                  <svg className="w-3 h-3 text-green-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                  <span className="text-[10px] font-semibold text-green-600">Verified</span>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="h-px bg-indigo-50" />
-
-          {/* Menu items */}
+          {/* Items */}
           <div className="py-1.5">
             {MENU_ITEMS.map((item, i) => (
               <div key={item.id}>
-                {/* Divider before Sign Out */}
-                {item.danger && i > 0 && <div className="h-px bg-indigo-50 mx-3 my-1" />}
-
+                {item.danger && i > 0 && (
+                  <div className="h-px mx-3 my-1" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                )}
                 <button
                   type="button"
                   role="menuitem"
                   id={`profile-menu-${item.id}`}
                   disabled={item.id === 'signout' && signingOut}
-                  onClick={() => handleItem(item.id)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-150 text-left disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ color: item.danger ? '#DC2626' : '#1E2A38' }}
+                  onClick={() => handleItem(item)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-left transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ color: item.danger ? '#F87171' : 'rgba(255,255,255,0.85)' }}
                   onMouseEnter={(e) => {
                     if (!e.currentTarget.disabled)
-                      e.currentTarget.style.background = item.danger ? '#FEF2F2' : '#F5F7FC';
+                      e.currentTarget.style.background = item.danger
+                        ? 'rgba(239,68,68,0.12)'
+                        : 'rgba(255,255,255,0.06)';
                   }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                  }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
-                  {/* Icon or spinner for sign-out */}
                   {item.id === 'signout' && signingOut ? (
                     <svg className="animate-spin w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
                       <path d="M22 12a10 10 0 00-10-10" strokeLinecap="round"/>
                     </svg>
                   ) : (
-                    <span style={{ color: item.danger ? '#DC2626' : '#3E5C8A', opacity: 0.8 }}>
+                    <span style={{ color: item.danger ? '#F87171' : '#93A5BF', opacity: 0.9 }}>
                       {item.icon}
                     </span>
                   )}

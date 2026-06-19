@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -8,7 +7,6 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Home() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const [emblemLoaded, setEmblemLoaded] = useState(false);
 
   const features = [
     {
@@ -38,7 +36,7 @@ export default function Home() {
     <div
       className="min-h-screen flex flex-col relative overflow-hidden"
       style={{
-        background: 'linear-gradient(145deg, #060E1C 0%, #0F1B30 30%, #1A2C50 65%, #243965 100%)',
+        background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)',
       }}
     >
       {/* ── Ambient orbs ── */}
@@ -68,51 +66,45 @@ export default function Home() {
       />
 
       {/* Dot grid */}
-      <div className="absolute inset-0 dot-pattern pointer-events-none" />
+      <div className="absolute inset-0 dot-pattern-light pointer-events-none" />
 
       {/* Decorative ring */}
       <div
-        className="absolute rounded-full border border-white/5 pointer-events-none"
+        className="absolute rounded-full border border-slate-300/40 pointer-events-none"
         style={{ width: '700px', height: '700px', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
       />
       <div
-        className="absolute rounded-full border border-white/[0.03] pointer-events-none"
+        className="absolute rounded-full border border-slate-300/30 pointer-events-none"
         style={{ width: '1000px', height: '1000px', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
       />
 
       {/* ── Header ── */}
       <header className="relative z-10 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-16">
         <div className="flex items-center gap-3">
-          {emblemLoaded ? (
-            <img 
-              src="/src/assets/emblem.png" 
-              alt="State Emblem of India" 
-              className="w-auto object-contain"
-              style={{ 
-                filter: 'url(#gold-emblem) drop-shadow(0 0 5px rgba(233,138,21,0.5))',
-                clipPath: 'inset(11% 13% 11% 13%)',
-                marginLeft: '-14px',
-                marginRight: '-14px',
-                height: '56px'
-              }}
-            />
-          ) : (
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-glow-gold"
-              style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2L2 7l10 5 10-5-10-5z"
-                  stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                  fill="rgba(255,255,255,0.2)"
-                />
-                <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          )}
-          <span className="font-display text-xl font-bold text-white tracking-tight">
+          <img
+            src="/emblem.svg"
+            alt="Logo"
+            className="w-10 h-10 rounded-xl object-contain bg-white/10 p-0.5 shadow-glow-gold flex-shrink-0"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling.style.display = 'flex';
+            }}
+          />
+          <div
+            className="w-10 h-10 rounded-xl hidden items-center justify-center flex-shrink-0 shadow-glow-gold"
+            style={{ background: 'linear-gradient(135deg, #E98A15, #F0A23E)' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2L2 7l10 5 10-5-10-5z"
+                stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                fill="rgba(255,255,255,0.2)"
+              />
+              <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span className="font-display text-xl font-bold text-slate-900 tracking-tight">
             {t('app.name')}
           </span>
         </div>
@@ -125,29 +117,6 @@ export default function Home() {
       {/* ── Hero section ── */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12 text-center">
 
-        {emblemLoaded && (
-          <div className="mb-4 animate-fade-up overflow-hidden flex items-center justify-center">
-            <img 
-              src="/src/assets/emblem.png" 
-              alt="State Emblem of India" 
-              className="w-auto object-contain scale-110"
-              style={{ 
-                filter: 'url(#gold-emblem) drop-shadow(0 0 18px rgba(233,138,21,0.6))',
-                clipPath: 'inset(11% 13% 11% 13%)',
-                height: '180px'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Hidden Image for automatic asset-existence detection */}
-        <img 
-          src="/src/assets/emblem.png" 
-          alt="" 
-          style={{ display: 'none' }} 
-          onLoad={() => setEmblemLoaded(true)} 
-        />
-
         {/* Badge */}
         <div
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 animate-fade-up"
@@ -158,22 +127,28 @@ export default function Home() {
             style={{ boxShadow: '0 0 8px rgba(233,138,21,0.8)' }}
           />
           <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-marigold-400">
-            {t('app.tagline')}
+            {t('app.name')} PORTAL
           </span>
         </div>
 
         {/* Headline */}
         <h1
-          className="font-display font-bold leading-tight text-white animate-fade-up delay-100"
-          style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', maxWidth: '820px' }}
+          className="font-display font-bold leading-tight text-slate-900 animate-fade-up delay-100"
+          style={{ fontSize: 'clamp(2.5rem, 6.5vw, 4.8rem)', maxWidth: '920px' }}
         >
-          {t('app.tagline')}
-          <br />
-          <span className="text-gradient-gold">{t('home.heroEffortless')}</span>
+          <span className="text-gradient-gold block tracking-tight">{t('app.tagline').split(' - ')[0]}</span>
+          {t('app.tagline').includes(' - ') && (
+            <span className="block text-slate-800 text-2xl sm:text-4xl lg:text-5xl mt-3 font-extrabold tracking-tight">
+              {t('app.tagline').split(' - ')[1]}
+            </span>
+          )}
+          <span className="block text-lg sm:text-2xl mt-4 font-semibold text-slate-500 uppercase tracking-widest">
+            {t('home.heroEffortless')}
+          </span>
         </h1>
 
-        <p className="mt-6 text-indigo-200/60 leading-relaxed animate-fade-up delay-200"
-          style={{ fontSize: 'clamp(0.95rem, 2vw, 1.125rem)', maxWidth: '440px' }}
+        <p className="mt-8 text-slate-600 leading-relaxed animate-fade-up delay-200"
+          style={{ fontSize: 'clamp(0.95rem, 2vw, 1.125rem)', maxWidth: '520px' }}
         >
           {t('home.heroSub')}
         </p>
@@ -181,9 +156,9 @@ export default function Home() {
         {/* CTA */}
         {currentUser ? (
           <div className="mt-10 glass rounded-2xl px-8 py-5 animate-fade-up delay-300">
-            <p className="text-indigo-200 text-sm">
+            <p className="text-slate-600 text-sm">
               {t('home.signedInAs')}{' '}
-              <span className="font-bold text-marigold-400">{currentUser.email || currentUser.phoneNumber}</span>
+              <span className="font-bold text-marigold-500">{currentUser.email || currentUser.phoneNumber}</span>
             </p>
           </div>
         ) : (
@@ -201,8 +176,8 @@ export default function Home() {
             <Link
               to="/signup"
               id="home-signup-btn"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base font-semibold rounded-xl border-2 text-white transition-all duration-255 hover:bg-white/10 hover:border-white/30 active:scale-95"
-              style={{ borderColor: 'rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.05)' }}
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base font-semibold rounded-xl border-2 text-slate-700 transition-all duration-255 hover:bg-slate-200 hover:border-slate-300 active:scale-95"
+              style={{ borderColor: 'rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.5)' }}
             >
               {t('auth.createAccount')}
             </Link>
@@ -214,7 +189,7 @@ export default function Home() {
           {stats.map((s, i) => (
             <div key={i} className="text-center">
               <p className="font-display text-2xl sm:text-3xl font-bold text-gradient-gold">{s.value}</p>
-              <p className="text-[11px] text-indigo-300/60 uppercase tracking-wider mt-0.5">{s.label}</p>
+              <p className="text-[11px] text-slate-500 uppercase tracking-wider mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -230,8 +205,8 @@ export default function Home() {
                 {f.emoji}
               </div>
               <div>
-                <p className="font-semibold text-white text-sm">{f.title}</p>
-                <p className="text-indigo-300/60 text-xs mt-0.5 leading-relaxed">{f.desc}</p>
+                <p className="font-semibold text-slate-900 text-sm">{f.title}</p>
+                <p className="text-slate-600 text-xs mt-0.5 leading-relaxed">{f.desc}</p>
               </div>
             </div>
           ))}
@@ -240,24 +215,10 @@ export default function Home() {
 
       {/* ── Footer ── */}
       <footer className="relative z-10 px-6 py-5 text-center">
-        <p className="text-[11px] text-indigo-500/40">
+        <p className="text-[11px] text-slate-400">
           {t('home.footer')}
         </p>
       </footer>
-      {/* Chroma key filter for converting white-to-transparent and black-to-gold */}
-      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
-        <defs>
-          <filter id="gold-emblem">
-            <feColorMatrix 
-              type="matrix" 
-              values="0 0 0 0 0.91
-                      0 0 0 0 0.54
-                      0 0 0 0 0.08
-                      -0.333 -0.333 -0.333 0 1" 
-            />
-          </filter>
-        </defs>
-      </svg>
     </div>
   );
 }
