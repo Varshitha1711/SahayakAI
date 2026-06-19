@@ -9,16 +9,14 @@ import VoiceAssistant from './VoiceAssistant';
 
 export default function Sidebar({ activePage, onVoiceCommand }) {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [logoError, setLogoError] = useState(false);
 
-  // Define sidebar navigation items
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/', id: 'dashboard' },
     { label: 'My Schemes', icon: ClipboardCheck, path: '/my-schemes', id: 'my-schemes' },
     { label: 'Explore', icon: Compass, path: '/explore', id: 'explore' },
     { label: 'Profile', icon: User, path: '/profile', id: 'profile' },
-    { label: 'Documents', icon: FileText, path: '/documents', id: 'documents' },
     { label: 'Settings', icon: Settings, path: '/settings', id: 'settings' },
     { label: 'Help', icon: HelpCircle, path: '/help', id: 'help' }
   ];
@@ -28,7 +26,7 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
     if (onVoiceCommand) {
       onVoiceCommand(text);
     } else {
-      navigate(`/explore?q=${encodeURIComponent(text)}`);
+      navigate(`/?q=${encodeURIComponent(text)}`);
     }
   };
 
@@ -71,7 +69,7 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
                 style={isActive ? { background: 'linear-gradient(135deg, #E98A15, #F0A23E)' } : {}}
               >
                 <item.icon className="w-5 h-5" />
-                {item.label}
+                {t(`sidebar.${item.id}`)}
               </button>
             );
           })}
@@ -80,12 +78,12 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
 
       {/* Voice Assistant integrated in Sidebar */}
       <div className="pt-4 border-t border-slate-200 w-full flex flex-col items-center text-center space-y-2.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Voice Assistant</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">{t('dashboard.voiceAssistantBrief')}</span>
         <VoiceAssistant 
           activeLanguage={i18n.language} 
           onCommand={handleVoiceCommand} 
         />
-        <span className="text-[9px] text-slate-400">Speak "Farmer", "Student", etc.</span>
+        <span className="text-[9px] text-slate-400">{t('dashboard.voiceSpeakFarmer')}</span>
       </div>
     </aside>
   );

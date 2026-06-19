@@ -127,22 +127,28 @@ export default function Home() {
             style={{ boxShadow: '0 0 8px rgba(233,138,21,0.8)' }}
           />
           <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-marigold-400">
-            {t('app.tagline')}
+            {t('app.name')} PORTAL
           </span>
         </div>
 
         {/* Headline */}
         <h1
           className="font-display font-bold leading-tight text-slate-900 animate-fade-up delay-100"
-          style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', maxWidth: '820px' }}
+          style={{ fontSize: 'clamp(2.5rem, 6.5vw, 4.8rem)', maxWidth: '920px' }}
         >
-          {t('app.tagline')}
-          <br />
-          <span className="text-gradient-gold">{t('home.heroEffortless')}</span>
+          <span className="text-gradient-gold block tracking-tight">{t('app.tagline').split(' - ')[0]}</span>
+          {t('app.tagline').includes(' - ') && (
+            <span className="block text-slate-800 text-2xl sm:text-4xl lg:text-5xl mt-3 font-extrabold tracking-tight">
+              {t('app.tagline').split(' - ')[1]}
+            </span>
+          )}
+          <span className="block text-lg sm:text-2xl mt-4 font-semibold text-slate-500 uppercase tracking-widest">
+            {t('home.heroEffortless')}
+          </span>
         </h1>
 
-        <p className="mt-6 text-slate-600 leading-relaxed animate-fade-up delay-200"
-          style={{ fontSize: 'clamp(0.95rem, 2vw, 1.125rem)', maxWidth: '440px' }}
+        <p className="mt-8 text-slate-600 leading-relaxed animate-fade-up delay-200"
+          style={{ fontSize: 'clamp(0.95rem, 2vw, 1.125rem)', maxWidth: '520px' }}
         >
           {t('home.heroSub')}
         </p>

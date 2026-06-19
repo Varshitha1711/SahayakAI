@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { 
-  Search, Bell, Bookmark, Volume2, VolumeX, ArrowRight, 
+  Search, Bookmark, Volume2, VolumeX, ArrowRight, ChevronDown,
   Sparkles, Award, Users, Globe, Building2, Eye, Compass, LayoutGrid
 } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../contexts/AuthContext';
@@ -105,12 +105,12 @@ const EXPLORE_CATEGORIES = [
 
 // Target Groups chips
 const TARGET_GROUPS = [
-  { label: 'All Citizens', value: '' },
-  { label: 'Farmers', value: 'Farmer' },
-  { label: 'Students', value: 'Student' },
-  { label: 'Entrepreneurs', value: 'Entrepreneur' },
-  { label: 'Unemployed', value: 'Unemployed' },
-  { label: 'Retired', value: 'Retired' }
+  { key: 'all', value: '' },
+  { key: 'farmer', value: 'Farmer' },
+  { key: 'student', value: 'Student' },
+  { key: 'entrepreneur', value: 'Entrepreneur' },
+  { key: 'unemployed', value: 'Unemployed' },
+  { key: 'retired', value: 'Retired' }
 ];
 
 export default function Explore() {
@@ -128,20 +128,66 @@ export default function Explore() {
   const [targetGroup, setTargetGroup] = useState('');
   const [schemeLevel, setSchemeLevel] = useState(''); // 'Central' | 'State' | ''
   const [schemes, setSchemes] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [expandedSchemeId, setExpandedSchemeId] = useState(null);
   const [speakingSchemeId, setSpeakingSchemeId] = useState(null);
   const [schemeDetails, setSchemeDetails] = useState({});
 
-  // Fetch explore search results
-  const fetchExploreSchemes = async () => {
-    setLoading(true);
+  // Bookmarks State
+  const [bookmarks, setBookmarks] = useState(() => {
     try {
-      // Use backend '/all' with pagination limit of 30 for explore page
+      const saved = localStorage.getItem(`bookmarks_${currentUser?.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      const saved = localStorage.getItem(`bookmarks_${currentUser.id}`);
+      setBookmarks(saved ? JSON.parse(saved) : []);
+    }
+  }, [currentUser]);
+
+  const toggleBookmark = (schemeId) => {
+    let updated;
+    if (bookmarks.includes(schemeId)) {
+      updated = bookmarks.filter(id => id !== schemeId);
+    } else {
+      updated = [...bookmarks, schemeId];
+    }
+    setBookmarks(updated);
+    if (currentUser) {
+      localStorage.setItem(`bookmarks_${currentUser.id}`, JSON.stringify(updated));
+    }
+  };
+
+  const isBookmarked = (schemeId) => bookmarks.includes(schemeId);
+
+  const getSortedList = (list) => {
+    return [...list].sort((a, b) => {
+      const aBook = isBookmarked(a.scheme_id) ? 1 : 0;
+      const bBook = isBookmarked(b.scheme_id) ? 1 : 0;
+      return bBook - aBook;
+    });
+  };
+
+  // Fetch explore search results
+  const fetchExploreSchemes = async (pageNum, append = false) => {
+    if (pageNum === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+    try {
       const response = await axios.get(`${API_BASE_URL}/schemes/all`, {
         params: {
-          page: 1,
-          limit: 30,
+          page: pageNum,
+          limit: 20,
           category: selectedCategory || undefined,
           level: schemeLevel || undefined,
           q: searchQuery || undefined,
@@ -149,12 +195,12 @@ export default function Explore() {
         }
       });
       
-      let filtered = response.data;
+      let fetchedData = response.data;
       
       // Client-side additional target-group filter matching
       if (targetGroup) {
         const tgt = targetGroup.toLowerCase();
-        filtered = filtered.filter(s => {
+        fetchedData = fetchedData.filter(s => {
           const tags = (s.tags || '').toLowerCase();
           const name = (s.scheme_name || '').toLowerCase();
           const details = (s.details || '').toLowerCase();
@@ -163,11 +209,22 @@ export default function Explore() {
         });
       }
 
-      setSchemes(filtered);
+      if (response.data.length < 20) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+
+      if (append) {
+        setSchemes(prev => [...prev, ...fetchedData]);
+      } else {
+        setSchemes(fetchedData);
+      }
     } catch (err) {
       console.error('Failed to load explore schemes:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -182,12 +239,14 @@ export default function Explore() {
       navigate('/signin');
       return;
     }
-    fetchExploreSchemes();
+    setPage(1);
+    fetchExploreSchemes(1, false);
   }, [currentUser, searchQuery, selectedCategory, targetGroup, schemeLevel, i18n.language]);
 
-  // Voice Query Callback integration from Sidebar
-  const handleVoiceCommand = (text) => {
-    setSearchParams({ q: text });
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchExploreSchemes(nextPage, true);
   };
 
   // Tracking Clicked schemes (unique visited counter)
@@ -260,7 +319,7 @@ export default function Explore() {
         background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)',
       }}
     >
-      <Sidebar activePage="explore" onVoiceCommand={handleVoiceCommand} />
+      <Sidebar activePage="explore" />
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col overflow-y-auto h-screen relative">
@@ -274,7 +333,7 @@ export default function Explore() {
                 setSearchQuery(e.target.value);
                 setSearchParams({ q: e.target.value });
               }}
-              placeholder="Search by keywords, tags..."
+              placeholder={t('explore.searchPlaceholder')}
               className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white text-slate-900"
             />
             <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -283,10 +342,6 @@ export default function Explore() {
           {/* Actions */}
           <div className="flex items-center gap-6">
             <LanguageSwitcher />
-            <button className="relative p-1.5 text-slate-500 hover:text-slate-900 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-            </button>
             <div className="relative">
               <ProfileMenu />
             </div>
@@ -301,19 +356,19 @@ export default function Explore() {
             </div>
             <div>
               <h1 className="text-3xl font-bold font-display tracking-tight text-slate-900 flex items-center gap-2">
-                Explore Schemes <Sparkles className="w-5 h-5 text-amber-500" />
+                {t('explore.title')} <Sparkles className="w-5 h-5 text-amber-500" />
               </h1>
-              <p className="text-sm text-slate-500 mt-1">Discover government policies, awards, subsidies, and central grants</p>
+              <p className="text-sm text-slate-500 mt-1">{t('explore.subtitle')}</p>
             </div>
           </div>
 
           {/* Interactive Statistics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Welfare Schemes', value: '3,390+', icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/5' },
-              { label: 'States & UTs', value: '37 Covered', icon: Globe, color: 'text-blue-500', bg: 'bg-blue-500/5' },
-              { label: 'Active Ministries', value: '15+ Depts', icon: Building2, color: 'text-purple-500', bg: 'bg-purple-500/5' },
-              { label: 'Monthly Visitors', value: '50,000+', icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/5' }
+              { label: t('explore.welfareSchemes'), value: '3,390+', icon: Award, color: 'text-amber-500', bg: 'bg-amber-500/5' },
+              { label: t('explore.statesCovered'), value: t('explore.statesCoveredVal'), icon: Globe, color: 'text-blue-500', bg: 'bg-blue-500/5' },
+              { label: t('explore.activeMinistries'), value: t('explore.activeMinistriesVal'), icon: Building2, color: 'text-purple-500', bg: 'bg-purple-500/5' },
+              { label: t('explore.monthlyVisitors'), value: '50,000+', icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/5' }
             ].map((stat, i) => (
               <div 
                 key={i} 
@@ -333,7 +388,7 @@ export default function Explore() {
           {/* Ministry / Category Widget Grid */}
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-              <LayoutGrid className="w-4 h-4" /> Browse by Department
+              <LayoutGrid className="w-4 h-4" /> {t('explore.browseByDept')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {EXPLORE_CATEGORIES.map(cat => {
@@ -351,7 +406,7 @@ export default function Explore() {
                     </div>
                     <span className="text-2xl">{cat.icon}</span>
                     <span className="text-xs font-bold leading-snug text-slate-800 transition-colors">
-                      {cat.label}
+                      {t(`myschemes.categories.${cat.id}`)}
                     </span>
                   </div>
                 );
@@ -359,74 +414,20 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* Filtering row */}
-          <div className="space-y-4 pt-2">
-            {/* Target groups */}
-            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-2">Target Citizen:</span>
-              {TARGET_GROUPS.map(grp => {
-                const isActive = targetGroup === grp.value;
-                return (
-                  <button
-                    key={grp.label}
-                    onClick={() => setTargetGroup(grp.value)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                      isActive 
-                        ? 'bg-[#E98A15] text-white border-[#E98A15] font-bold' 
-                        : 'border-slate-300 text-slate-600 hover:border-slate-400 bg-white shadow-sm'
-                    }`}
-                  >
-                    {grp.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Scheme level */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold font-display text-slate-900">
-                {selectedCategory || searchQuery || targetGroup || schemeLevel 
-                  ? 'Filtered Search Results' 
-                  : 'Trending Government Schemes'}
-              </h2>
-
-              <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-                {[
-                  { label: 'All Schemes', value: '' },
-                  { label: 'Central', value: 'Central' },
-                  { label: 'State', value: 'State' }
-                ].map(level => {
-                  const isActive = schemeLevel === level.value;
-                  return (
-                    <button
-                      key={level.label}
-                      onClick={() => setSchemeLevel(level.value)}
-                      className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${
-                        isActive ? 'bg-[#E98A15] text-white font-extrabold shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      {level.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
           {/* Schemes results feed */}
           {loading ? (
             <div className="flex flex-col items-center py-20 gap-3">
               <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-              <span className="text-xs text-slate-500 uppercase font-semibold">Filtering Matches...</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold">{t('dashboard.loadingMatches')}</span>
             </div>
           ) : schemes.length === 0 ? (
             <div className="rounded-2xl p-16 text-center border border-slate-200 bg-white">
-              <p className="text-sm font-semibold text-slate-500">No schemes matching explore filters</p>
-              <p className="text-xs text-slate-400 mt-1">Try clearing some query inputs or filter tags.</p>
+              <p className="text-sm font-semibold text-slate-500">{t('explore.noSchemesExplore')}</p>
+              <p className="text-xs text-slate-400 mt-1">{t('explore.noSchemesExploreSub')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {schemes.map((scheme, index) => {
+              {getSortedList(schemes).map((scheme, index) => {
                 const colors = getCardStyle(index);
                 const isExpanded = expandedSchemeId === scheme.scheme_id;
                 const isSpeaking = speakingSchemeId === scheme.scheme_id;
@@ -445,9 +446,24 @@ export default function Explore() {
 
                     <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
                       <div className="flex justify-between items-start">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors.bg}`}>
-                          <Bookmark className={`w-5 h-5 ${colors.text}`} />
-                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBookmark(scheme.scheme_id);
+                          }}
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                            isBookmarked(scheme.scheme_id) 
+                              ? 'bg-amber-500 text-white shadow-md' 
+                              : `${colors.bg} hover:bg-slate-200`
+                          }`}
+                        >
+                          <Bookmark 
+                            className="w-5 h-5" 
+                            style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }} 
+                            fill={isBookmarked(scheme.scheme_id) ? '#ffffff' : 'none'}
+                          />
+                        </button>
                         <span className="bg-[#E98A15]/10 text-[#E98A15] text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/20">
                           {scheme.level || 'Central'}
                         </span>
@@ -464,8 +480,8 @@ export default function Explore() {
 
                       <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 mt-auto">
                         <div className="truncate pr-2">
-                          <p className="text-[9px] text-slate-500 uppercase tracking-wider">Benefit</p>
-                          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || 'Check Details'}</p>
+                          <p className="text-[9px] text-slate-500 uppercase tracking-wider">{t('dashboard.benefitLabel')}</p>
+                          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || t('dashboard.checkDetails')}</p>
                         </div>
                         
                         <button
@@ -487,27 +503,27 @@ export default function Explore() {
                         {!schemeDetails[scheme.scheme_id] ? (
                           <div className="flex items-center gap-2 py-4 justify-center text-slate-500 font-semibold">
                             <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-                            <span>Loading details...</span>
+                            <span>{t('dashboard.loadingDetails')}</span>
                           </div>
                         ) : (
                           <>
                             {schemeDetails[scheme.scheme_id].details && (
                               <div>
-                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Scheme Details</h4>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.schemeDetails')}</h4>
                                 <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].details}</p>
                               </div>
                             )}
                             
                             {schemeDetails[scheme.scheme_id].eligibility && (
                               <div>
-                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Eligibility Criteria</h4>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.eligibilityCriteria')}</h4>
                                 <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].eligibility}</p>
                               </div>
                             )}
 
                             {schemeDetails[scheme.scheme_id].documents && (
                               <div>
-                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Required Documents</h4>
+                                <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.requiredDocuments')}</h4>
                                 <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].documents}</p>
                               </div>
                             )}
@@ -526,17 +542,17 @@ export default function Explore() {
                         }}
                         className="flex-1 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all text-center"
                       >
-                        {isExpanded ? 'Less Info' : 'Learn More'}
+                        {isExpanded ? t('dashboard.collapseDetails') : t('dashboard.expandDetails')}
                       </button>
                       
                       <a
-                        href={`https://www.myscheme.gov.in/schemes/${scheme.slug}`}
+                        href={getApplyUrl(scheme)}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="flex-1 py-2 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-all text-center flex items-center justify-center gap-1.5"
                       >
-                        Apply Online <ArrowRight className="w-3 h-3" />
+                        {t('dashboard.applyOnline')} <ArrowRight className="w-3 h-3" />
                       </a>
                     </div>
                   </div>
@@ -544,8 +560,56 @@ export default function Explore() {
               })}
             </div>
           )}
+
+          {hasMore && schemes.length > 0 && !loading && (
+            <div className="flex justify-center pt-4 pb-12">
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="px-8 py-3 rounded-xl border border-slate-300 text-sm font-semibold hover:border-amber-500/50 hover:bg-slate-100 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2 bg-white text-slate-700 shadow-sm"
+              >
+                {loadingMore ? (
+                  <>
+                    <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(15,23,42,0.2)', borderTopColor: '#0f172a' }} />
+                    {t('common.loading')}
+                  </>
+                ) : (
+                  <>
+                    {t('myschemes.loadMore')}
+                    <ChevronDown className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </main>
       </div>
     </div>
   );
 }
+
+// Helper function to extract URLs from text
+const extractUrl = (text) => {
+  if (!text) return null;
+  const match = text.match(/https?:\/\/[^\s,\"\')]+/);
+  return match ? match[0] : null;
+};
+
+// Helper function to dynamically construct the application link
+const getApplyUrl = (scheme) => {
+  if (!scheme) return '#';
+
+  const isStatic = scheme.scheme_id < 100000;
+  if (isStatic && scheme.slug) {
+    return `https://www.myscheme.gov.in/schemes/${scheme.slug}`;
+  }
+
+  const urlFromApp = extractUrl(scheme.application);
+  if (urlFromApp) return urlFromApp;
+
+  const urlFromDetails = extractUrl(scheme.details);
+  if (urlFromDetails) return urlFromDetails;
+
+  return `https://www.google.com/search?q=how+to+apply+online+for+${encodeURIComponent(scheme.scheme_name)}`;
+};
+

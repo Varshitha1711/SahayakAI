@@ -9,7 +9,7 @@ import { auth } from '../services/firebase';
 
 const AuthContext = createContext(null);
 
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
 
 // Inject JWT bearer token into every axios request
 axios.interceptors.request.use(
@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('sahayak_token');
     setCurrentUser(null);
     // Also sign out of Firebase so state stays consistent
-    auth.signOut().catch(() => {});
+    auth.signOut().catch(() => { });
   };
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('sahayak_token', response.data.access_token);
     } catch (backendErr) {
       // Backend registration failed — clean up Firebase account to avoid orphan
-      await firebaseUser.delete().catch(() => {});
+      await firebaseUser.delete().catch(() => { });
       throw backendErr;
     }
 
@@ -186,7 +186,14 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (profileData) => {
     const response = await axios.put(`${API_BASE_URL}/profile`, profileData);
+    // Update local state immediately
     setCurrentUser(response.data);
+    // Force a fresh read from backend so recommendation logic uses updated DB values
+    try {
+      await fetchProfile();
+    } catch {
+      // ignore; immediate update already happened
+    }
     return response.data;
   };
 

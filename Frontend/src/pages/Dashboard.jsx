@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   User, MapPin, Briefcase, GraduationCap,
   Search, Volume2, VolumeX, Eye, ClipboardCheck, ArrowRight, HelpCircle,
-  Bell, ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight,
   Bookmark, CheckCircle
 } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../contexts/AuthContext';
@@ -42,6 +42,8 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParam = searchParams.get('q') || '';
 
   // State variables
   const [recommendations, setRecommendations] = useState([]);
@@ -54,6 +56,46 @@ export default function Dashboard() {
   const [expandedSchemeId, setExpandedSchemeId] = useState(null);
   const [schemeDetails, setSchemeDetails] = useState({}); // stores full details by scheme_id
   const [visitedCount, setVisitedCount] = useState(0);
+
+  // Bookmarks State
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bookmarks_${currentUser?.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (currentUser) {
+      const saved = localStorage.getItem(`bookmarks_${currentUser.id}`);
+      setBookmarks(saved ? JSON.parse(saved) : []);
+    }
+  }, [currentUser]);
+
+  const toggleBookmark = (schemeId) => {
+    let updated;
+    if (bookmarks.includes(schemeId)) {
+      updated = bookmarks.filter(id => id !== schemeId);
+    } else {
+      updated = [...bookmarks, schemeId];
+    }
+    setBookmarks(updated);
+    if (currentUser) {
+      localStorage.setItem(`bookmarks_${currentUser.id}`, JSON.stringify(updated));
+    }
+  };
+
+  const isBookmarked = (schemeId) => bookmarks.includes(schemeId);
+
+  const getSortedList = (list) => {
+    return [...list].sort((a, b) => {
+      const aBook = isBookmarked(a.scheme_id) ? 1 : 0;
+      const bBook = isBookmarked(b.scheme_id) ? 1 : 0;
+      return bBook - aBook;
+    });
+  };
 
   // Pagination states
   const [recPage, setRecPage] = useState(0);
@@ -103,29 +145,46 @@ export default function Dashboard() {
       navigate('/onboarding');
       return;
     }
-    setSchemeDetails({}); // clear detailed cache on language switch
-    loadRecommendations();
-    if (searchQuery.trim()) {
-      handleSearch(searchQuery);
+
+    // Reset local caches and force a refresh whenever profile changes
+    setSchemeDetails({});
+    setRecPage(0);
+    setRecentPage(0);
+
+    if (queryParam) {
+      setActiveTab('search');
+      setSearchQuery(queryParam);
+      handleSearch(queryParam);
+    } else {
+      setActiveTab('eligible');
+      setSearchResults([]);
+      setSearchQuery('');
     }
+
+    loadRecommendations();
 
     // Load recently viewed from localStorage
     const saved = localStorage.getItem(`recently_viewed_${currentUser.id}`);
     if (saved) {
       setRecentlyViewed(JSON.parse(saved));
+    } else {
+      setRecentlyViewed([]);
     }
 
     // Load visited count from localStorage
     const savedVisited = localStorage.getItem(`visited_schemes_${currentUser.id}`);
     if (savedVisited) {
       setVisitedCount(JSON.parse(savedVisited).length);
+    } else {
+      setVisitedCount(0);
     }
-  }, [currentUser, i18n.language]);
+  }, [currentUser, i18n.language, queryParam]);
 
   // Handle Speech Recognition query result
   const handleVoiceCommand = (text) => {
     setActiveTab('search');
     handleSearch(text);
+    setSearchParams({ q: text });
   };
 
   // Track clicked schemes
@@ -216,9 +275,9 @@ export default function Dashboard() {
   // Greeting helper based on local time
   const getGreeting = () => {
     const hr = new Date().getHours();
-    if (hr < 12) return 'Good morning';
-    if (hr < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hr < 12) return t('dashboard.greetingMorning');
+    if (hr < 17) return t('dashboard.greetingAfternoon');
+    return t('dashboard.greetingEvening');
   };
 
   // Card theme configurations
@@ -253,10 +312,19 @@ export default function Dashboard() {
               type="text"
               value={searchQuery}
               onChange={(e) => {
-                setActiveTab('search');
-                handleSearch(e.target.value);
+                const val = e.target.value;
+                setSearchQuery(val);
+                if (!val.trim()) {
+                  setActiveTab('eligible');
+                  setSearchResults([]);
+                  setSearchParams({});
+                } else {
+                  setActiveTab('search');
+                  handleSearch(val);
+                  setSearchParams({ q: val });
+                }
               }}
-              placeholder="Search schemes, benefits, or keywords..."
+              placeholder={t('dashboard.searchPlaceholder')}
               className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white text-slate-900"
             />
             <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -265,10 +333,6 @@ export default function Dashboard() {
           {/* Action icons & Profile */}
           <div className="flex items-center gap-6">
             <LanguageSwitcher />
-            <button className="relative p-1.5 text-slate-500 hover:text-slate-900 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-            </button>
             <div className="relative">
               <ProfileMenu />
             </div>
@@ -284,14 +348,14 @@ export default function Dashboard() {
               {getGreeting()}, {currentUser?.full_name} 👋
             </h1>
             <p className="text-sm text-slate-600">
-              You're eligible for {recommendations.length} new schemes
+              {t('dashboard.eligibleCount', { count: recommendations.length })}
             </p>
           </div>
 
           {/* Statistics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Eligible Schemes Card */}
-            <div 
+            <div
               onClick={() => navigate('/my-schemes')}
               className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02] cursor-pointer hover:border-amber-500/40 relative group"
               style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid rgba(245,158,11,0.3)' }}>
@@ -299,11 +363,11 @@ export default function Dashboard() {
                 <span className="text-3xl font-extrabold text-amber-500">{recommendations.length}</span>
                 <ChevronRight className="w-5 h-5 text-amber-500/40 group-hover:text-amber-500 transition-colors" />
               </div>
-              <span className="text-sm font-semibold text-amber-500/80 flex items-center gap-1">Eligible Schemes</span>
+              <span className="text-sm font-semibold text-amber-500/80 flex items-center gap-1">{t('dashboard.statsEligible')}</span>
             </div>
 
             {/* Visited Card */}
-            <div 
+            <div
               onClick={() => navigate('/my-schemes')}
               className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02] cursor-pointer hover:border-emerald-500/40 relative group"
               style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1.5px solid rgba(16,185,129,0.3)' }}>
@@ -311,14 +375,14 @@ export default function Dashboard() {
                 <span className="text-3xl font-extrabold text-emerald-500">{visitedCount}</span>
                 <ChevronRight className="w-5 h-5 text-emerald-500/40 group-hover:text-emerald-500 transition-colors" />
               </div>
-              <span className="text-sm font-semibold text-emerald-500/80">Visited Schemes</span>
+              <span className="text-sm font-semibold text-emerald-500/80">{t('dashboard.statsVisited')}</span>
             </div>
 
             {/* Total Benefits Card */}
             <div className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02]"
               style={{ background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)', border: '1.5px solid rgba(168,85,247,0.3)' }}>
               <span className="text-3xl font-extrabold text-purple-400">₹{totalBenefits.toLocaleString('en-IN')}</span>
-              <span className="text-sm font-semibold text-purple-400/80">Total Benefits</span>
+              <span className="text-sm font-semibold text-purple-400/80">{t('dashboard.statsBenefits')}</span>
             </div>
           </div>
 
@@ -327,47 +391,47 @@ export default function Dashboard() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-bold font-display text-slate-900">
-                  {activeTab === 'eligible' ? 'Your Top Matches' : `Search Results for "${searchQuery}"`}
+                  {activeTab === 'eligible' ? t('dashboard.topMatches') : t('dashboard.searchResults', { query: searchQuery })}
                 </h2>
                 {activeTab === 'eligible' && (
-                  <Link 
-                    to="/my-schemes" 
+                  <Link
+                    to="/my-schemes"
                     className="text-xs font-semibold text-amber-500 hover:text-amber-400 flex items-center gap-0.5 hover:underline"
                   >
-                    View All <ArrowRight className="w-3 h-3" />
+                    {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" />
                   </Link>
                 )}
               </div>
               {/* Pagination for Feed */}
-              {((activeTab === 'eligible' && recommendations.length > REC_ITEMS_PER_PAGE) || 
+              {((activeTab === 'eligible' && recommendations.length > REC_ITEMS_PER_PAGE) ||
                 (activeTab === 'search' && searchResults.length > REC_ITEMS_PER_PAGE)) && (
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setRecPage(p => Math.max(0, p - 1))}
-                    disabled={recPage === 0}
-                    className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setRecPage(p => p + 1)}
-                    disabled={
-                      activeTab === 'eligible' 
-                        ? (recPage + 1) * REC_ITEMS_PER_PAGE >= recommendations.length 
-                        : (recPage + 1) * REC_ITEMS_PER_PAGE >= searchResults.length
-                    }
-                    className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setRecPage(p => Math.max(0, p - 1))}
+                      disabled={recPage === 0}
+                      className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setRecPage(p => p + 1)}
+                      disabled={
+                        activeTab === 'eligible'
+                          ? (recPage + 1) * REC_ITEMS_PER_PAGE >= recommendations.length
+                          : (recPage + 1) * REC_ITEMS_PER_PAGE >= searchResults.length
+                      }
+                      className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
             </div>
 
             {loading && activeTab === 'eligible' ? (
               <div className="flex flex-col items-center py-16 gap-3">
                 <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-                <span className="text-xs text-slate-500 uppercase font-semibold">Loading Matches...</span>
+                <span className="text-xs text-slate-500 uppercase font-semibold">{t('dashboard.loadingMatches')}</span>
               </div>
             ) : activeTab === 'eligible' ? (
               recommendations.length === 0 ? (
@@ -376,29 +440,29 @@ export default function Dashboard() {
                     <HelpCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm">No Matches Found</h3>
-                    <p className="text-slate-500 text-xs mt-1">Try filling more details in edit profile to get recommendations.</p>
+                    <h3 className="font-bold text-slate-900 text-sm">{t('dashboard.noMatchesFound')}</h3>
+                    <p className="text-slate-500 text-xs mt-1">{t('dashboard.noMatchesSubtext')}</p>
                   </div>
-                  <Link to="/profile" className="inline-block px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs transition-colors hover:bg-amber-400">Update Profile</Link>
+                  <Link to="/profile" className="inline-block px-5 py-2 rounded-xl bg-amber-500 text-black font-semibold text-xs transition-colors hover:bg-amber-400">{t('dashboard.updateProfile')}</Link>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {recommendations.slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
+                  {getSortedList(recommendations).slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
                 </div>
               )
             ) : (
               // Search Results
               searchQuery.trim() === '' ? (
                 <div className="rounded-2xl p-10 text-center border border-slate-200 bg-white/50 text-slate-500 text-xs">
-                  Type a query to search government schemes.
+                  {t('dashboard.emptySearch')}
                 </div>
               ) : searchResults.length === 0 ? (
                 <div className="rounded-2xl p-10 text-center border border-slate-200 bg-white/50 text-slate-500 text-xs">
-                  No schemes found matching "{searchQuery}"
+                  {t('dashboard.noSearchResults', { query: searchQuery })}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {searchResults.slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
+                  {getSortedList(searchResults).slice(recPage * REC_ITEMS_PER_PAGE, (recPage + 1) * REC_ITEMS_PER_PAGE).map((scheme, index) => renderMockupSchemeCard(scheme, index))}
                 </div>
               )
             )}
@@ -407,17 +471,17 @@ export default function Dashboard() {
           {/* Recently Viewed Section */}
           <div className="space-y-4 pt-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold font-display text-slate-900">Recently Viewed</h2>
+              <h2 className="text-lg font-bold font-display text-slate-900">{t('dashboard.recentlyViewed')}</h2>
               {recentlyViewed.length > RECENT_ITEMS_PER_PAGE && (
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => setRecentPage(p => Math.max(0, p - 1))}
                     disabled={recentPage === 0}
                     className="w-8 h-8 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center text-indigo-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => setRecentPage(p => p + 1)}
                     disabled={(recentPage + 1) * RECENT_ITEMS_PER_PAGE >= recentlyViewed.length}
                     className="w-8 h-8 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center text-indigo-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -429,7 +493,7 @@ export default function Dashboard() {
             </div>
 
             {recentlyViewed.length === 0 ? (
-              <p className="text-slate-500 text-xs">No recently viewed schemes yet.</p>
+              <p className="text-slate-500 text-xs">{t('dashboard.noRecentlyViewed')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {recentlyViewed.slice(recentPage * RECENT_ITEMS_PER_PAGE, (recentPage + 1) * RECENT_ITEMS_PER_PAGE).map((scheme, index) => (
@@ -471,19 +535,33 @@ export default function Dashboard() {
         style={{ borderTop: `4px solid ${colors.text}` }}
       >
         {/* Subtle Watermark Background Image */}
-        <div 
-          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-[0.08] transition-all group-hover:scale-105 duration-500" 
-          style={{ backgroundImage: `url(${getCategoryBgImage(scheme.schemeCategory)})` }} 
+        <div
+          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-[0.08] transition-all group-hover:scale-105 duration-500"
+          style={{ backgroundImage: `url(${getCategoryBgImage(scheme.schemeCategory)})` }}
         />
 
         <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
           {/* Top Row: Icon + Badge */}
           <div className="flex justify-between items-start">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors.iconBg}`}>
-              <Bookmark className="w-5 h-5" style={{ color: colors.text }} />
-            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark(scheme.scheme_id);
+              }}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isBookmarked(scheme.scheme_id)
+                ? 'bg-amber-500 text-white shadow-md'
+                : `${colors.iconBg} hover:bg-slate-200`
+                }`}
+            >
+              <Bookmark
+                className="w-5 h-5"
+                style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }}
+                fill={isBookmarked(scheme.scheme_id) ? '#ffffff' : 'none'}
+              />
+            </button>
             <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1">
-              You Qualify <CheckCircle className="w-3 h-3" />
+              {t('dashboard.youQualify')} <CheckCircle className="w-3 h-3" />
             </span>
           </div>
 
@@ -500,8 +578,8 @@ export default function Dashboard() {
           {/* Benefit & TTS */}
           <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 mt-auto">
             <div className="truncate pr-2">
-              <p className="text-[9px] text-slate-500 uppercase tracking-wider">Benefit</p>
-              <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || 'Check Details'}</p>
+              <p className="text-[9px] text-slate-500 uppercase tracking-wider">{t('dashboard.benefitLabel')}</p>
+              <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{scheme.benefits || t('dashboard.checkDetails')}</p>
             </div>
 
             <button
@@ -522,27 +600,27 @@ export default function Dashboard() {
             {!schemeDetails[scheme.scheme_id] ? (
               <div className="flex items-center gap-2 py-4 justify-center text-slate-500 font-semibold">
                 <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(233,138,21,0.3)', borderTopColor: '#E98A15' }} />
-                <span>Loading details...</span>
+                <span>{t('dashboard.loadingDetails')}</span>
               </div>
             ) : (
               <>
                 {schemeDetails[scheme.scheme_id].details && (
                   <div>
-                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Scheme Details</h4>
+                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.schemeDetails')}</h4>
                     <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].details}</p>
                   </div>
                 )}
 
                 {schemeDetails[scheme.scheme_id].eligibility && (
                   <div>
-                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Eligibility Criteria</h4>
+                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.eligibilityCriteria')}</h4>
                     <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].eligibility}</p>
                   </div>
                 )}
 
                 {schemeDetails[scheme.scheme_id].documents && (
                   <div>
-                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">Required Documents</h4>
+                    <h4 className="font-bold mb-1 uppercase tracking-wide text-[9px] text-amber-500">{t('dashboard.requiredDocuments')}</h4>
                     <p className="leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700">{schemeDetails[scheme.scheme_id].documents}</p>
                   </div>
                 )}
@@ -561,20 +639,46 @@ export default function Dashboard() {
             }}
             className="flex-1 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-all text-center"
           >
-            {isExpanded ? 'Less Info' : 'Learn More'}
+            {isExpanded ? t('dashboard.collapseDetails') : t('dashboard.expandDetails')}
           </button>
 
           <a
-            href={`https://www.myscheme.gov.in/schemes/${scheme.slug}`}
+            href={getApplyUrl(scheme)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             className="flex-1 py-2 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-all text-center flex items-center justify-center gap-1.5"
           >
-            Apply Online <ArrowRight className="w-3 h-3" />
+            {t('dashboard.applyOnline')} <ArrowRight className="w-3 h-3" />
           </a>
         </div>
       </div>
     );
   }
 }
+
+// Helper function to extract URLs from text
+const extractUrl = (text) => {
+  if (!text) return null;
+  const match = text.match(/https?:\/\/[^\s,\"\')]+/);
+  return match ? match[0] : null;
+};
+
+// Helper function to dynamically construct the application link
+const getApplyUrl = (scheme) => {
+  if (!scheme) return '#';
+
+  const isStatic = scheme.scheme_id < 100000;
+  if (isStatic && scheme.slug) {
+    return `https://www.myscheme.gov.in/schemes/${scheme.slug}`;
+  }
+
+  const urlFromApp = extractUrl(scheme.application);
+  if (urlFromApp) return urlFromApp;
+
+  const urlFromDetails = extractUrl(scheme.details);
+  if (urlFromDetails) return urlFromDetails;
+
+  return `https://www.google.com/search?q=how+to+apply+online+for+${encodeURIComponent(scheme.scheme_name)}`;
+};
+
