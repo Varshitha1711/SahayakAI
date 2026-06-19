@@ -21,6 +21,7 @@ class User(Base):
     education_level = Column(String(50), nullable=True)
     disability_status = Column(Boolean, default=False, nullable=True)
     marital_status = Column(String(20), nullable=True)
+    email_notifications = Column(Boolean, default=True, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=text("TIMEZONE('utc'::text, NOW())"), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=text("TIMEZONE('utc'::text, NOW())"), nullable=False, onupdate=text("TIMEZONE('utc'::text, NOW())"))
 

@@ -19,6 +19,11 @@ def update_profile(
     db: Session = Depends(get_db)
 ):
     """Updates the logged-in user's profile details during onboarding or profile edits."""
+    # Check if notification preference changed
+    old_notif = current_user.email_notifications if current_user.email_notifications is not None else True
+    new_notif = profile_data.email_notifications if profile_data.email_notifications is not None else True
+    notif_changed = (old_notif != new_notif)
+
     # Update profile fields
     current_user.age = profile_data.age
     current_user.gender = profile_data.gender
@@ -30,7 +35,13 @@ def update_profile(
     current_user.education_level = profile_data.education_level
     current_user.disability_status = profile_data.disability_status
     current_user.marital_status = profile_data.marital_status
+    current_user.email_notifications = new_notif
     
     db.commit()
     db.refresh(current_user)
+    
+    if notif_changed:
+        from app.services.email import send_notification_email
+        send_notification_email(current_user.email, current_user.full_name, new_notif)
+        
     return current_user

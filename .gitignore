@@ -1,0 +1,5 @@
+.DS_Store
+.env
+**/__pycache__/
+sahayak_backend/venv/
+sahayak_backend/translations_cache.json

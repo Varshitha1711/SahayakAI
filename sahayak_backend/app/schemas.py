@@ -37,6 +37,7 @@ class UserProfileUpdate(BaseModel):
     education_level: str = Field(..., min_length=2, max_length=50)
     disability_status: bool = Field(default=False)
     marital_status: str = Field(..., min_length=2, max_length=20)
+    email_notifications: bool = Field(default=True)
 
 
 class UserProfile(BaseModel):
@@ -53,6 +54,7 @@ class UserProfile(BaseModel):
     education_level: str | None = None
     disability_status: bool = False
     marital_status: str | None = None
+    email_notifications: bool = True
     created_at: datetime
     updated_at: datetime
 
