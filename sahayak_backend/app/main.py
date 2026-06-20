@@ -55,5 +55,3 @@ def read_root():
         "status": "healthy",
         "tagline": "SAHAYAKAI - Bridging Citizens and Services"
     }
-
-# Reload trigger

@@ -26,7 +26,7 @@ export default function Sidebar({ activePage, onVoiceCommand }) {
     if (onVoiceCommand) {
       onVoiceCommand(text);
     } else {
-      navigate(`/?q=${encodeURIComponent(text)}`);
+      navigate(`/explore?q=${encodeURIComponent(text)}`);
     }
   };
 

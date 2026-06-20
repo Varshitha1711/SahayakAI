@@ -470,18 +470,18 @@ const extractUrl = (text) => {
 // Helper function to dynamically construct the application link
 const getApplyUrl = (scheme) => {
   if (!scheme) return '#';
-
+  
   const isStatic = scheme.scheme_id < 100000;
   if (isStatic && scheme.slug) {
     return `https://www.myscheme.gov.in/schemes/${scheme.slug}`;
   }
-
+  
   const urlFromApp = extractUrl(scheme.application);
   if (urlFromApp) return urlFromApp;
-
+  
   const urlFromDetails = extractUrl(scheme.details);
   if (urlFromDetails) return urlFromDetails;
-
+  
   return `https://www.google.com/search?q=how+to+apply+online+for+${encodeURIComponent(scheme.scheme_name)}`;
 };
 

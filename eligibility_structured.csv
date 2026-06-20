@@ -131,6 +131,8 @@ scheme_id,scheme_name,min_age,max_age,gender,state,occupation,income_limit,categ
 130,ASEAN-India Research Training Fellowship,3.0,45.0,Male,All India,Any,,"SC,ST",UG,Any,Any
 131,Aahar Anudan Yojana,,,Female,Madhya Pradesh,Any,,Any,Any,Any,Any
 132,Aaloo Ke Kufri Chipsona-1 Prabhed Ke Kshetra Vistaar Yojana,,,Female,All India,Farmer,,"SC,ST",Any,Any,Any
+133,Aam Aadmi Bima Yojana,18.0,59.0,Any,All India,Any,,Any,Any,Any,Any
+134,Aam Aadmi Bima Yojana (Maharashtra),18.0,59.0,Any,Maharashtra,Labour,,"SC,ST",Any,Any,Any
 135,Aamar Dukan On Wheels,18.0,,Male,All India,Unemployed,,ST,Any,Any,Any
 136,Aapki Beti Hamari Beti,18.0,,Female,Haryana,Any,,"SC,ST",Any,Any,Married
 137,Aapki Beti Yojana,,,Female,Rajasthan,Student,,"SC,ST",Student,Any,Any
