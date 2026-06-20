@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   User, MapPin, Briefcase, GraduationCap,
@@ -42,8 +42,6 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const queryParam = searchParams.get('q') || '';
 
   // State variables
   const [recommendations, setRecommendations] = useState([]);
@@ -150,18 +148,14 @@ export default function Dashboard() {
     setSchemeDetails({});
     setRecPage(0);
     setRecentPage(0);
-
-    if (queryParam) {
-      setActiveTab('search');
-      setSearchQuery(queryParam);
-      handleSearch(queryParam);
-    } else {
-      setActiveTab('eligible');
-      setSearchResults([]);
-      setSearchQuery('');
-    }
+    setActiveTab('eligible');
+    setSearchResults([]);
+    setSearchQuery('');
 
     loadRecommendations();
+    if (searchQuery.trim()) {
+      handleSearch(searchQuery);
+    }
 
     // Load recently viewed from localStorage
     const saved = localStorage.getItem(`recently_viewed_${currentUser.id}`);
@@ -178,13 +172,12 @@ export default function Dashboard() {
     } else {
       setVisitedCount(0);
     }
-  }, [currentUser, i18n.language, queryParam]);
+  }, [currentUser, i18n.language]);
 
   // Handle Speech Recognition query result
   const handleVoiceCommand = (text) => {
     setActiveTab('search');
     handleSearch(text);
-    setSearchParams({ q: text });
   };
 
   // Track clicked schemes
@@ -312,17 +305,8 @@ export default function Dashboard() {
               type="text"
               value={searchQuery}
               onChange={(e) => {
-                const val = e.target.value;
-                setSearchQuery(val);
-                if (!val.trim()) {
-                  setActiveTab('eligible');
-                  setSearchResults([]);
-                  setSearchParams({});
-                } else {
-                  setActiveTab('search');
-                  handleSearch(val);
-                  setSearchParams({ q: val });
-                }
+                setActiveTab('search');
+                handleSearch(e.target.value);
               }}
               placeholder={t('dashboard.searchPlaceholder')}
               className="w-full bg-slate-100 border border-slate-300 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-amber-500 focus:bg-white text-slate-900"
@@ -355,7 +339,7 @@ export default function Dashboard() {
           {/* Statistics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Eligible Schemes Card */}
-            <div
+            <div 
               onClick={() => navigate('/my-schemes')}
               className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02] cursor-pointer hover:border-amber-500/40 relative group"
               style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '1.5px solid rgba(245,158,11,0.3)' }}>
@@ -367,7 +351,7 @@ export default function Dashboard() {
             </div>
 
             {/* Visited Card */}
-            <div
+            <div 
               onClick={() => navigate('/my-schemes')}
               className="rounded-2xl p-6 flex flex-col justify-between h-32 transition-all hover:scale-[1.02] cursor-pointer hover:border-emerald-500/40 relative group"
               style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1.5px solid rgba(16,185,129,0.3)' }}>
@@ -394,8 +378,8 @@ export default function Dashboard() {
                   {activeTab === 'eligible' ? t('dashboard.topMatches') : t('dashboard.searchResults', { query: searchQuery })}
                 </h2>
                 {activeTab === 'eligible' && (
-                  <Link
-                    to="/my-schemes"
+                  <Link 
+                    to="/my-schemes" 
                     className="text-xs font-semibold text-amber-500 hover:text-amber-400 flex items-center gap-0.5 hover:underline"
                   >
                     {t('dashboard.viewAll')} <ArrowRight className="w-3 h-3" />
@@ -403,29 +387,29 @@ export default function Dashboard() {
                 )}
               </div>
               {/* Pagination for Feed */}
-              {((activeTab === 'eligible' && recommendations.length > REC_ITEMS_PER_PAGE) ||
+              {((activeTab === 'eligible' && recommendations.length > REC_ITEMS_PER_PAGE) || 
                 (activeTab === 'search' && searchResults.length > REC_ITEMS_PER_PAGE)) && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setRecPage(p => Math.max(0, p - 1))}
-                      disabled={recPage === 0}
-                      className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setRecPage(p => p + 1)}
-                      disabled={
-                        activeTab === 'eligible'
-                          ? (recPage + 1) * REC_ITEMS_PER_PAGE >= recommendations.length
-                          : (recPage + 1) * REC_ITEMS_PER_PAGE >= searchResults.length
-                      }
-                      className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setRecPage(p => Math.max(0, p - 1))}
+                    disabled={recPage === 0}
+                    className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => setRecPage(p => p + 1)}
+                    disabled={
+                      activeTab === 'eligible' 
+                        ? (recPage + 1) * REC_ITEMS_PER_PAGE >= recommendations.length 
+                        : (recPage + 1) * REC_ITEMS_PER_PAGE >= searchResults.length
+                    }
+                    className="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-300 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {loading && activeTab === 'eligible' ? (
@@ -474,14 +458,14 @@ export default function Dashboard() {
               <h2 className="text-lg font-bold font-display text-slate-900">{t('dashboard.recentlyViewed')}</h2>
               {recentlyViewed.length > RECENT_ITEMS_PER_PAGE && (
                 <div className="flex gap-2">
-                  <button
+                  <button 
                     onClick={() => setRecentPage(p => Math.max(0, p - 1))}
                     disabled={recentPage === 0}
                     className="w-8 h-8 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center text-indigo-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <button
+                  <button 
                     onClick={() => setRecentPage(p => p + 1)}
                     disabled={(recentPage + 1) * RECENT_ITEMS_PER_PAGE >= recentlyViewed.length}
                     className="w-8 h-8 rounded-full border border-white/5 hover:border-white/20 flex items-center justify-center text-indigo-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -535,9 +519,9 @@ export default function Dashboard() {
         style={{ borderTop: `4px solid ${colors.text}` }}
       >
         {/* Subtle Watermark Background Image */}
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-[0.08] transition-all group-hover:scale-105 duration-500"
-          style={{ backgroundImage: `url(${getCategoryBgImage(scheme.schemeCategory)})` }}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-[0.08] transition-all group-hover:scale-105 duration-500" 
+          style={{ backgroundImage: `url(${getCategoryBgImage(scheme.schemeCategory)})` }} 
         />
 
         <div className="flex flex-col gap-4 flex-grow mb-5 relative z-10">
@@ -549,14 +533,15 @@ export default function Dashboard() {
                 e.stopPropagation();
                 toggleBookmark(scheme.scheme_id);
               }}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isBookmarked(scheme.scheme_id)
-                ? 'bg-amber-500 text-white shadow-md'
-                : `${colors.iconBg} hover:bg-slate-200`
-                }`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isBookmarked(scheme.scheme_id) 
+                  ? 'bg-amber-500 text-white shadow-md' 
+                  : `${colors.iconBg} hover:bg-slate-200`
+              }`}
             >
-              <Bookmark
-                className="w-5 h-5"
-                style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }}
+              <Bookmark 
+                className="w-5 h-5" 
+                style={{ color: isBookmarked(scheme.scheme_id) ? '#ffffff' : colors.text }} 
                 fill={isBookmarked(scheme.scheme_id) ? '#ffffff' : 'none'}
               />
             </button>
@@ -667,18 +652,18 @@ const extractUrl = (text) => {
 // Helper function to dynamically construct the application link
 const getApplyUrl = (scheme) => {
   if (!scheme) return '#';
-
+  
   const isStatic = scheme.scheme_id < 100000;
   if (isStatic && scheme.slug) {
     return `https://www.myscheme.gov.in/schemes/${scheme.slug}`;
   }
-
+  
   const urlFromApp = extractUrl(scheme.application);
   if (urlFromApp) return urlFromApp;
-
+  
   const urlFromDetails = extractUrl(scheme.details);
   if (urlFromDetails) return urlFromDetails;
-
+  
   return `https://www.google.com/search?q=how+to+apply+online+for+${encodeURIComponent(scheme.scheme_name)}`;
 };
 

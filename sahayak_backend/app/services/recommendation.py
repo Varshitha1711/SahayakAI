@@ -15,58 +15,20 @@ dynamic_schemes_cache = {}
 user_rec_cache = {}
 
 # Persistent caches
-CACHE_FILE = os.path.join(settings.CSV_DATA_DIR, "dynamic_schemes_cache.json")
-USER_REC_CACHE_FILE = os.path.join(settings.CSV_DATA_DIR, "user_recommendations_cache.json")
+CACHE_FILE = None
+USER_REC_CACHE_FILE = None
 
 def load_dynamic_cache():
-    global dynamic_schemes_cache
-    if os.path.exists(CACHE_FILE):
-        try:
-            with open(CACHE_FILE, "r") as f:
-                data = json.load(f)
-                dynamic_schemes_cache = {int(k): v for k, v in data.items()}
-                print(f"Loaded {len(dynamic_schemes_cache)} dynamic schemes from persistent cache.")
-        except Exception as e:
-            print(f"Error loading dynamic schemes cache: {e}")
-            dynamic_schemes_cache = {}
-    else:
-        dynamic_schemes_cache = {}
+    pass
 
 def save_dynamic_cache():
-    global dynamic_schemes_cache
-    try:
-        with open(CACHE_FILE, "w") as f:
-            data = {str(k): v for k, v in dynamic_schemes_cache.items()}
-            json.dump(data, f, indent=2)
-            print(f"Saved {len(dynamic_schemes_cache)} dynamic schemes to persistent cache.")
-    except Exception as e:
-        print(f"Error saving dynamic schemes cache: {e}")
+    pass
 
 def load_user_rec_cache():
-    global user_rec_cache
-    if os.path.exists(USER_REC_CACHE_FILE):
-        try:
-            with open(USER_REC_CACHE_FILE, "r") as f:
-                user_rec_cache = json.load(f)
-                print(f"Loaded {len(user_rec_cache)} user recommendations cache entries.")
-        except Exception as e:
-            print(f"Error loading user rec cache: {e}")
-            user_rec_cache = {}
-    else:
-        user_rec_cache = {}
+    pass
 
 def save_user_rec_cache():
-    global user_rec_cache
-    try:
-        import tempfile
-        dir_name = os.path.dirname(USER_REC_CACHE_FILE)
-        with tempfile.NamedTemporaryFile("w", dir=dir_name, delete=False, encoding="utf-8") as f:
-            json.dump(user_rec_cache, f, indent=2)
-            temp_name = f.name
-        os.replace(temp_name, USER_REC_CACHE_FILE)
-        print(f"Saved {len(user_rec_cache)} user recommendations cache entries.")
-    except Exception as e:
-        print(f"Error saving user rec cache: {e}")
+    pass
 
 
 def load_datasets():
@@ -213,8 +175,18 @@ def get_dynamic_llm_recommendations(user: User) -> list[dict]:
     # Always regenerate (avoid stale recommendations across profile updates)
     # Cache is still written at the end for future calls.
     if p_hash in user_rec_cache:
-        print(f"Cache BYPASSED: recomputing dynamic recommendations for user {user.id} (p_hash={p_hash})")
+        print(f"Using cached recommendations for user {user.id}")
 
+        rec_ids = user_rec_cache[p_hash]
+
+        cached_schemes = [
+            dynamic_schemes_cache[sid]
+            for sid in rec_ids
+            if sid in dynamic_schemes_cache
+        ]
+
+        if cached_schemes:
+            return cached_schemes
     api_key = settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY")
     if not api_key:
         print("WARNING: GROQ_API_KEY is not set. Skipping dynamic LLM recommendations.")
@@ -251,17 +223,7 @@ def get_dynamic_llm_recommendations(user: User) -> list[dict]:
         f"   - Occupation constraint: User's occupation is {profile['occupation']}. Do NOT recommend schemes for farmers, weavers, workers, or entrepreneurs if the user is a student.\n"
         f"   - Category constraint: User's caste category is {profile['category']}. If a scheme is restricted to SC/ST/OBC, do NOT recommend it to a General category user.\n"
         f"   - Disability constraint: User's disability status is {profile['disability_status']}. If this is False, you MUST NOT recommend any scheme that is restricted to specially-abled/disabled individuals (e.g. Saksham Scholarship Scheme). Only recommend disability schemes if this is True.\n"
-        "2. ACCURATE APPLICATION PORTAL URLS: You MUST provide correct, active, and official URL domains in the 'application' field. Never hallucinate domains or use dead/invalid URLs (e.g. do NOT use epass.ap.gov.in or nmms.gov.in). Use this reference table for common portals:\n"
-        "   - Andhra Pradesh state schemes / scholarships: Use 'https://jnanabhumi.ap.gov.in/'\n"
-        "   - Central scholarships / National Scholarship Portal / NMMS: Use 'https://scholarships.gov.in/'\n"
-        "   - National Pension System (NPS): Use 'https://enps.nsdl.com/'\n"
-        "   - Telangana state schemes / scholarships: Use 'https://telanganaepass.cgg.gov.in/'\n"
-        "3. COMPREHENSIVE AND EXTENSIVE DESCRIPTIONS: For each recommended scheme, you MUST provide highly detailed, extensive information. Short summaries are strictly forbidden. Follow these structure rules:\n"
-        "   - 'details': Provide a thorough, comprehensive overview of the scheme (minimum 6-8 sentences). Include the year of launch, the ministry or department responsible, the vision, the long-term goals, and the target groups (such as underprivileged classes, female students, or rural communities).\n"
-        "   - 'benefits': Provide an exhaustive and detailed breakdown of all financial support. List all applicable components (e.g., exact scholarship amounts per year/month, tuition fee coverage, maintenance allowances for hostellers vs. day scholars, reader charges for visually challenged students, book grants, ad-hoc allowances, travel concessions, etc.).\n"
-        "   - 'eligibility': Provide a highly detailed list of eligibility requirements. Specify the exact age limits, maximum parental annual income limits (e.g. up to Rs. 8 lakhs per annum), academic qualifications (minimum marks or grades in previous examinations), caste/category classifications (General, OBC, SC/ST, Minorities), gender restrictions, and state residency/nativity constraints.\n"
-        "   - 'documents': Provide an exhaustive, complete checklist of all certificates and documents needed to apply. This must include general documents (Aadhaar, PAN, birth certificate, bank passbook, passport photos) and specific ones (Income Certificate issued by a Tahsildar or authorized revenue officer, Caste/Community Certificate, Residence/Nativity Certificate, Bonafide Student Certificate from the Head of the Institution, marksheets of SSC/Intermediate/Degree exams, etc.).\n"
-        "4. Return a list of up to 6 most relevant schemes that the user strictly qualifies for.\n\n"
+        "2. Return a list of up to 6 most relevant schemes that the user strictly qualifies for.\n\n"
         "The output must be a JSON object with a single key 'schemes' containing an array of schemes, where each scheme has: "
         "- scheme_id: a unique integer (generate starting from 100000) "
         "- scheme_name: official name of the scheme "
