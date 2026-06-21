@@ -2,14 +2,17 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+
+// Vite exposes only `import.meta.env.*` at build time.
 const firebaseConfig = {
-  apiKey: "AIzaSyA2U7TPDSYZQ1hnquklfelWafp3r1WmBNU",
-  authDomain: "sahayak-c1d25.firebaseapp.com",
-  projectId: "sahayak-c1d25",
-  storageBucket: "sahayak-c1d25.firebasestorage.app",
-  messagingSenderId: "116835267148",
-  appId: "1:116835267148:web:912a70fc7444691bb9bae9",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
 
 const app = initializeApp(firebaseConfig);
 
