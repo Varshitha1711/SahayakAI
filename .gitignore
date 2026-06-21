@@ -2,4 +2,5 @@
 .env
 **/__pycache__/
 sahayak_backend/venv/
+sahayak_backend/venv311/
 sahayak_backend/translations_cache.json

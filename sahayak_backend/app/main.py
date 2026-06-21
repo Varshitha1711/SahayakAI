@@ -26,19 +26,31 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend local development
+# CORS: allow local dev + Vercel frontend
+# Note: FastAPI's CORSMiddleware does not support wildcards like "*.vercel.app".
+# So we allow the common Vercel patterns explicitly.
+vercel_origins = [
+    "https://vercel.app",
+    "https://vercel.com",
+    
+]
+
+allow_origins = [
+    "http://localhost:5173", "http://127.0.0.1:5173",
+    "http://localhost:5174", "http://127.0.0.1:5174",
+    "http://localhost:5175", "http://127.0.0.1:5175",
+    "http://localhost:3000", "http://127.0.0.1:3000",
+    *vercel_origins,
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", "http://127.0.0.1:5173",
-        "http://localhost:5174", "http://127.0.0.1:5174",
-        "http://localhost:5175", "http://127.0.0.1:5175",
-        "http://localhost:3000", "http://127.0.0.1:3000"
-    ],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Include route paths
 app.include_router(auth_router)
