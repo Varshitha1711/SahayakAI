@@ -15,8 +15,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     
     # CSV Data Directory Settings
-    # Default to parent directory of app/ where CSVs are placed
+    # Default: repo root (Render repo contents are mounted there)
+    # so `eligibility_structured.csv` and `schemes_clean.csv` resolve correctly.
     CSV_DATA_DIR: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
 
     # Groq API Configuration
     GROQ_API_KEY: str | None = None
