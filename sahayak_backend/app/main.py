@@ -32,6 +32,7 @@ app = FastAPI(
 vercel_origins = [
     "https://vercel.app",
     "https://vercel.com",
+    
     "https://sahayak-ai-ebon.vercel.app",
 ]
 
