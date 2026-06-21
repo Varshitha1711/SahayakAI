@@ -30,10 +30,7 @@ app = FastAPI(
 # Note: FastAPI's CORSMiddleware does not support wildcards like "*.vercel.app".
 # So we allow the common Vercel patterns explicitly.
 vercel_origins = [
-    "https://vercel.app",
-    "https://vercel.com",
-    
-    "https://sahayak-ai-ebon.vercel.app",
+    "https://sahayak-ai-lime.vercel.app",
 ]
 
 
